@@ -8,12 +8,12 @@
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="{{ url_for('home') }}"><span class="brand-mark">♪</span><span>Music Shop</span></a>
+      <a class="brand" href="{{ url_for('ui.home') }}"><span class="brand-mark">♪</span><span>Music Shop</span></a>
       <nav class="main-nav" aria-label="Primary navigation">
-        <a href="{{ url_for('home') }}#catalog">Catalog</a>
-        <a href="{{ url_for('account') }}">Account</a>
-        <a href="{{ url_for('admin_dashboard') }}">Admin</a>
-        <a class="cart-link" href="{{ url_for('cart') }}">Cart <span>{{ cart_count }}</span></a>
+        <a href="{{ url_for('ui.home') }}#catalog">Catalog</a>
+        <a href="{{ url_for('ui.account') }}">Account</a>
+        <a href="{{ url_for('ui.admin_dashboard') }}">Admin</a>
+        <a class="cart-link" href="{{ url_for('ui.cart') }}">Cart <span>{{ cart_count }}</span></a>
       </nav>
     </header>
     <main>
