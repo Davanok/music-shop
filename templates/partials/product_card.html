@@ -1,0 +1,5 @@
+<article class="product-card">
+  <img src="{{ product.image_url }}" alt="{{ product.name }}" />
+  <div><p class="category-label">{{ product.category.name }}</p><h3>{{ product.name }}</h3><p>{{ product.description }}</p><span class="stock {{ 'in' if product.stock > 0 else 'out' }}">{{ product.stock ~ ' in stock' if product.stock > 0 else 'Out of stock' }}</span></div>
+  <div class="card-footer"><strong>{{ product.price|currency }}</strong><div class="card-actions"><a class="button ghost" href="{{ url_for('ui.product_detail', slug=product.slug) }}">Details</a><form method="post" action="{{ url_for('ui.add_cart_item', product_id=product.id) }}"><button {% if product.stock < 1 %}disabled{% endif %}>Add</button></form></div></div>
+</article>
