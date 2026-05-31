@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Music Shop</title>
+    <meta name="description" content="A full-featured music gear storefront with catalog, cart, checkout, account history, and admin tools." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#home" aria-label="Music Shop home"><span class="brand-mark">♪</span><span>Music Shop</span></a>
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a href="#catalog">Catalog</a>
+        <a href="#account">Account</a>
+        <a href="#admin">Admin</a>
+        <a class="cart-link" href="#cart">Cart <span id="cart-count">0</span></a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="home" class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Spring studio sale</p>
+          <h1>Find your next sound with instruments built for every musician.</h1>
+          <p>Browse curated guitars, drums, keyboards, wind instruments, parts, and accessories with a checkout flow ready for rehearsals, gigs, and studio upgrades.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#catalog">Shop catalog</a>
+            <a class="button ghost" href="#categories">Explore categories</a>
+          </div>
+        </div>
+        <aside class="promo-card">
+          <span>Bundle deal</span>
+          <strong>Save 15% on accessories with any featured instrument.</strong>
+          <p>Use promo code STAGE15 at checkout.</p>
+        </aside>
+      </section>
+
+      <section class="section" aria-labelledby="featured-title">
+        <div class="section-heading">
+          <p class="eyebrow">Editor picks</p>
+          <h2 id="featured-title">Featured products</h2>
+        </div>
+        <div id="featured-products" class="product-grid"></div>
+      </section>
+
+      <section id="categories" class="section" aria-labelledby="categories-title">
+        <div class="section-heading">
+          <p class="eyebrow">Shop by sound</p>
+          <h2 id="categories-title">Categories showcase</h2>
+        </div>
+        <div id="category-grid" class="category-grid"></div>
+      </section>
+
+      <section id="catalog" class="section" aria-labelledby="catalog-title">
+        <div class="section-heading catalog-heading">
+          <div>
+            <p class="eyebrow">Catalog</p>
+            <h2 id="catalog-title">All music gear</h2>
+          </div>
+          <div class="filters" aria-label="Catalog filters">
+            <input id="search-input" type="search" placeholder="Search instruments or accessories" />
+            <select id="category-filter"></select>
+            <select id="stock-filter">
+              <option value="all">Any stock status</option>
+              <option value="in-stock">In stock</option>
+              <option value="out-of-stock">Out of stock</option>
+            </select>
+          </div>
+        </div>
+        <div id="catalog-grid" class="product-grid"></div>
+      </section>
+
+      <section id="product-detail" class="detail-layout hidden" aria-live="polite"></section>
+
+      <section id="cart" class="section page-section">
+        <div class="section-heading"><p class="eyebrow">Shopping cart</p><h1>Review your order</h1></div>
+        <div class="cart-layout">
+          <div id="cart-items" class="cart-items"></div>
+          <aside id="cart-summary" class="summary-card"></aside>
+        </div>
+      </section>
+
+      <section id="checkout" class="section page-section">
+        <div class="section-heading"><p class="eyebrow">Checkout</p><h1>Place your order</h1></div>
+        <div class="checkout-layout">
+          <form id="checkout-form" class="form-card">
+            <label class="field">Full name<input name="name" required /></label>
+            <label class="field">Email<input name="email" type="email" required /></label>
+            <label class="field">Shipping address<textarea name="address" rows="4" required></textarea></label>
+            <button class="button primary" type="submit">Place order</button>
+          </form>
+          <aside id="checkout-summary" class="summary-card"></aside>
+        </div>
+        <div id="confirmation" class="confirmation-card hidden"></div>
+      </section>
+
+      <section id="account" class="section page-section">
+        <div class="section-heading"><p class="eyebrow">My account</p><h1>Order history</h1></div>
+        <div id="orders-list" class="orders-list"></div>
+      </section>
+
+      <section id="admin" class="section page-section">
+        <div class="section-heading"><p class="eyebrow">Admin dashboard</p><h1>Manage music shop</h1></div>
+        <div id="admin-metrics" class="admin-metrics"></div>
+        <div class="admin-layout">
+          <form id="product-form" class="form-card">
+            <h2 id="product-form-title">Add product</h2>
+            <input type="hidden" name="id" />
+            <label class="field">Product name<input name="name" required /></label>
+            <label class="field">Category<select name="categoryId"></select></label>
+            <div class="form-row">
+              <label class="field">Price<input name="price" type="number" min="0" required /></label>
+              <label class="field">Stock<input name="stock" type="number" min="0" required /></label>
+            </div>
+            <label class="field checkbox-field"><input name="featured" type="checkbox" /> Featured product</label>
+            <label class="field">Description<textarea name="description" rows="4" required></textarea></label>
+            <label class="field">Product image URL<input name="image" /></label>
+            <label class="field upload-field">Upload product image for local storage<input id="image-upload" type="file" accept="image/*" /></label>
+            <img id="upload-preview" class="upload-preview hidden" alt="Product preview" />
+            <div class="hero-actions"><button class="button primary" type="submit">Save product</button><button id="clear-product" class="button ghost" type="button">Clear</button></div>
+          </form>
+          <div class="admin-panel"><div class="panel-header"><h2>Products</h2><span id="product-total"></span></div><div id="admin-products"></div></div>
+        </div>
+        <div class="admin-layout bottom-layout">
+          <div class="admin-panel"><div class="panel-header"><h2>Categories</h2><span>Seed categories</span></div><form id="category-form" class="category-manager"><input name="name" placeholder="New category name" /><button>Add category</button></form><div id="admin-categories"></div></div>
+          <div class="admin-panel"><div class="panel-header"><h2>Orders</h2><span id="order-total"></span></div><div id="admin-orders"></div></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
