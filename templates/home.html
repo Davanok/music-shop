@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Spring studio sale</p>
+    <h1>Find your next sound with instruments built for every musician.</h1>
+    <p>Browse curated guitars, drums, keyboards, wind instruments, parts, and accessories backed by a Flask + MySQL storefront.</p>
+    <div class="hero-actions"><a class="button primary" href="#catalog">Shop catalog</a><a class="button ghost" href="#categories">Explore categories</a></div>
+  </div>
+  <aside class="promo-card"><span>Bundle deal</span><strong>Save 15% on accessories with any featured instrument.</strong><p>Use promo code STAGE15 at checkout.</p></aside>
+</section>
+<section class="section"><div class="section-heading"><p class="eyebrow">Editor picks</p><h2>Featured products</h2></div><div class="product-grid">{% for product in featured %}{% include "partials/product_card.html" %}{% endfor %}</div></section>
+<section id="categories" class="section"><div class="section-heading"><p class="eyebrow">Shop by sound</p><h2>Categories showcase</h2></div><div class="category-grid">{% for category in categories %}<a class="category-card" href="{{ url_for('home', category=category.slug) }}#catalog"><img src="{{ category.image_url }}" alt="{{ category.name }}"><span>{{ category.name }}</span><p>{{ category.description }}</p></a>{% endfor %}</div></section>
+<section id="catalog" class="section"><div class="section-heading catalog-heading"><div><p class="eyebrow">Catalog</p><h2>All music gear</h2></div><form class="filters" method="get"><input name="q" type="search" placeholder="Search instruments or accessories" value="{{ filters.q }}"><select name="category"><option value="all">All categories</option>{% for category in categories %}<option value="{{ category.slug }}" {% if filters.category == category.slug %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select><select name="stock"><option value="all">Any stock status</option><option value="in-stock" {% if filters.stock == 'in-stock' %}selected{% endif %}>In stock</option><option value="out-of-stock" {% if filters.stock == 'out-of-stock' %}selected{% endif %}>Out of stock</option></select><button class="button primary">Filter</button></form></div><div class="product-grid">{% for product in products %}{% include "partials/product_card.html" %}{% else %}<p class="empty-state">No products match those filters.</p>{% endfor %}</div></section>
+{% endblock %}
