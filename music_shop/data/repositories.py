@@ -2,7 +2,7 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.orm import joinedload
 
 from .database import db
-from .models import Category, Customer, Order, Product
+from .models import Category, Customer, Order, Product, User
 
 
 def list_categories():
@@ -92,12 +92,6 @@ def get_or_create_customer(name, email, address):
     return customer
 
 
-def save_order(order):
-    db.session.add(order)
-    db.session.commit()
-    return order
-
-
 def get_order_by_number(order_number):
     return db.session.scalars(
         select(Order).options(joinedload(Order.customer), joinedload(Order.items)).where(Order.order_number == order_number)
@@ -118,21 +112,28 @@ def total_revenue():
     return db.session.scalar(select(func.coalesce(func.sum(Order.total), 0)))
 
 
-__all__ = [
-    "create_category",
-    "delete_category",
-    "delete_product",
-    "get_category",
-    "get_order_by_number",
-    "get_or_create_customer",
-    "get_product",
-    "get_product_by_slug",
-    "list_categories",
-    "list_orders",
-    "list_orders_for_email",
-    "list_products",
-    "list_products_by_ids",
-    "save_order",
-    "save_product",
-    "total_revenue",
-]
+def list_users():
+    return db.session.scalars(select(User).order_by(User.role, User.email)).all()
+
+
+def get_user(user_id):
+    return db.session.get(User, user_id)
+
+
+def get_user_by_email(email):
+    return db.session.scalar(select(User).where(User.email == email))
+
+
+def create_user(email, name, password_hash, role):
+    user = User(email=email, name=name, password_hash=password_hash, role=role)
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+
+def update_user_role(user_id, role):
+    user = get_user(user_id)
+    if user:
+        user.role = role
+        db.session.commit()
+    return user

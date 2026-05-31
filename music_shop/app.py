@@ -5,7 +5,7 @@ from flask import Flask
 from .api.routes import api
 from .config import Config
 from .data.database import db
-from .data.services import cart_count, cart_totals
+from .data.services import cart_count, cart_totals, current_user
 from .data.seeds import seed_data
 from .ui.routes import ui
 
@@ -24,11 +24,11 @@ def create_app(config_object=Config):
         """Create SQLAlchemy tables and load seed data."""
         db.create_all()
         seed_data()
-        print("Initialized Music Shop database.")
+        print("База данных Music Shop инициализирована.")
 
     @app.context_processor
     def inject_globals():
-        return {"cart_count": cart_count(), "cart_totals": cart_totals}
+        return {"cart_count": cart_count(), "cart_totals": cart_totals, "current_user": current_user()}
 
     @app.template_filter("currency")
     def currency(value):

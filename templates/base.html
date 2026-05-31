@@ -1,22 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Music Shop{% endblock %}</title>
+    <title>{% block title %}Музыкальный магазин{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <script src="{{ url_for('static', filename='js/cart.js') }}" defer></script>
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="{{ url_for('ui.home') }}"><span class="brand-mark">♪</span><span>Music Shop</span></a>
-      <nav class="main-nav" aria-label="Primary navigation">
-        <a href="{{ url_for('ui.home') }}#catalog">Catalog</a>
-        <a href="{{ url_for('ui.account') }}">Account</a>
-        <a href="{{ url_for('ui.admin_dashboard') }}">Admin</a>
-        <a class="cart-link" href="{{ url_for('ui.cart') }}">Cart <span>{{ cart_count }}</span></a>
+      <a class="brand" href="{{ url_for('ui.home') }}"><span class="brand-mark">♪</span><span>Музыкальный магазин</span></a>
+      <nav class="main-nav" aria-label="Основная навигация">
+        <a href="{{ url_for('ui.home') }}#catalog">Каталог</a>
+        <a href="{{ url_for('ui.account') }}">Мой аккаунт</a>
+        {% if current_user %}
+          {% if current_user.is_admin %}<a href="{{ url_for('ui.admin_dashboard') }}">Администрирование</a>{% endif %}
+          <form class="inline-form" method="post" action="{{ url_for('ui.logout') }}"><button class="nav-button">Выйти</button></form>
+        {% else %}
+          <a href="{{ url_for('ui.login') }}">Войти</a>
+        {% endif %}
+        <a class="cart-link" href="{{ url_for('ui.cart') }}">Корзина <span id="cart-count">{{ cart_count }}</span></a>
       </nav>
     </header>
     <main>
+      <div id="toast" class="toast" hidden></div>
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           <div class="flash-stack">

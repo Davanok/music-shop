@@ -1,30 +1,47 @@
-# Music Shop Flask + MySQL
+# Музыкальный магазин на Flask + MySQL
 
-A responsive music shop web application built with Python Flask, SQLAlchemy, and MySQL. It includes a storefront catalog, product details, cart, checkout, account order lookup, JSON API endpoints, and an admin dashboard for products, categories, orders, and uploaded product images.
+Адаптивное веб-приложение музыкального магазина на Python Flask, SQLAlchemy и MySQL. В проекте есть витрина, карточки товаров, корзина, оформление заказа, поиск истории заказов, JSON API и административная панель с управлением товарами, категориями, пользователями, ролями и загрузкой изображений.
 
-## Architecture
+## Архитектура
 
-The app is split into explicit layers:
+Приложение разделено на слои:
 
-- `music_shop/ui/` contains browser-facing Flask routes that render Jinja templates.
-- `music_shop/api/` contains JSON API routes under `/api` for products, categories, and cart operations.
-- `music_shop/data/` contains SQLAlchemy setup, ORM models, repositories, and service functions for cart, checkout, uploads, and serialization.
-- `templates/` contains the UI layer templates, and `static/` contains CSS plus uploaded product images.
+- `music_shop/ui/` — маршруты Flask для пользовательского интерфейса и Jinja-шаблонов.
+- `music_shop/api/` — JSON API под префиксом `/api` для товаров, категорий и корзины.
+- `music_shop/data/` — SQLAlchemy, ORM-модели, репозитории, бизнес-сервисы, корзина, заказы, роли, загрузки и сериализация.
+- `templates/` — русскоязычный интерфейс.
+- `static/` — CSS, JavaScript для асинхронной корзины и загруженные изображения.
 
-## Features
+## Возможности
 
-- Product catalog with category, stock, and text search filters.
-- Product detail pages with gallery images, descriptions, prices, stock status, and add-to-cart forms.
-- Session-backed shopping cart with quantity management and an order summary.
-- Checkout flow that creates customers, orders, order items, and reduces stock in MySQL through SQLAlchemy transactions.
-- Account page that shows order history by customer email.
-- Admin dashboard for products, categories, revenue/order visibility, and product image uploads stored under `static/uploads`.
-- JSON API endpoints for catalog/category/cart integrations.
-- Responsive HTML/CSS templates rendered by Flask.
+- Каталог с поиском, фильтрами по категории и наличию.
+- Страница товара с галереей, описанием, ценой, остатком и асинхронной кнопкой «В корзину».
+- Корзина с мгновенным обновлением счетчика и содержимого после добавления товара.
+- Оформление заказа: отображаются только товары, доставка и итог.
+- История заказов по электронной почте покупателя.
+- Административные учетные записи, вход, выход и управление ролями.
+- Только пользователи с ролью `admin` могут управлять товарами, категориями, пользователями и ролями.
+- JSON API для интеграций.
+- Адаптивные шаблоны для desktop и mobile.
 
-## Setup
+## Роли
 
-1. Create a virtual environment and install dependencies:
+Поддерживаются роли:
+
+- `admin` — полный доступ к административной панели, товарам, категориям и ролям.
+- `manager` — учетная запись без доступа к управлению товарами.
+- `viewer` — учетная запись только для просмотра пользовательской части.
+
+Команда `flask --app app init-db` создает начального администратора:
+
+- Email: `admin@music-shop.local`
+- Пароль: `admin12345`
+
+После первого входа рекомендуется создать нового администратора и изменить начальные данные.
+
+## Установка
+
+1. Создайте виртуальное окружение и установите зависимости:
 
    ```bash
    python3 -m venv .venv
@@ -32,7 +49,7 @@ The app is split into explicit layers:
    pip install -r requirements.txt
    ```
 
-2. Create the MySQL database and user:
+2. Создайте базу данных MySQL и пользователя:
 
    ```sql
    CREATE DATABASE music_shop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -41,29 +58,28 @@ The app is split into explicit layers:
    FLUSH PRIVILEGES;
    ```
 
+3. При необходимости настройте переменные окружения из `.env.example`, включая `DATABASE_URL`.
 
-3. Configure environment variables as needed. `.env.example` lists supported values, including `DATABASE_URL` for overriding the default SQLAlchemy MySQL connection string.
-
-4. Create SQLAlchemy tables and load seed data:
+4. Создайте таблицы SQLAlchemy и загрузите начальные данные:
 
    ```bash
    flask --app app init-db
    ```
 
-   The legacy `schema.sql` and `seed.sql` files are also included for teams that prefer direct MySQL imports.
+   Файлы `schema.sql` и `seed.sql` оставлены для команд, которым нужен прямой импорт в MySQL.
 
-5. Run the app:
+5. Запустите приложение:
 
    ```bash
    flask --app app run --debug
    ```
 
-6. Open `http://127.0.0.1:5000`.
+6. Откройте `http://127.0.0.1:5000`.
 
-## API examples
+## Примеры API
 
 - `GET /api/products?q=guitar&category=guitars&stock=in-stock`
 - `GET /api/products/aurora-strat`
 - `GET /api/categories`
 - `GET /api/cart`
-- `POST /api/cart/items` with JSON like `{ "product_id": 1, "quantity": 2 }`
+- `POST /api/cart/items` с JSON `{ "product_id": 1, "quantity": 2 }`

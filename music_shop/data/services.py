@@ -2,23 +2,25 @@ import json
 import re
 import uuid
 from decimal import Decimal
+from functools import wraps
 from pathlib import Path
 
-from flask import current_app, session, url_for
+from flask import current_app, flash, redirect, session, url_for
+from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from .database import db
-from .models import Order, OrderItem
-from .repositories import get_or_create_customer, get_product, list_products_by_ids
+from .models import Order, OrderItem, Product
+from .repositories import get_or_create_customer, get_product, get_user, get_user_by_email, list_products_by_ids
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 DEFAULT_IMAGE = "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=900&q=80"
 SHIPPING_RATE = Decimal("24.00")
-TAX_RATE = Decimal("0.0825")
+ROLE_LABELS = {"admin": "Администратор", "manager": "Менеджер", "viewer": "Наблюдатель"}
 
 
 def slugify(value):
-    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    slug = re.sub(r"[^a-z0-9а-яё]+", "-", value.lower()).strip("-")
     return slug or uuid.uuid4().hex[:10]
 
 
@@ -93,14 +95,13 @@ def cart_totals(items=None):
     items = cart_items() if items is None else items
     subtotal = sum((item["line_total"] for item in items), Decimal("0.00"))
     shipping = SHIPPING_RATE if subtotal > 0 else Decimal("0.00")
-    tax = (subtotal * TAX_RATE).quantize(Decimal("0.01"))
-    return {"subtotal": subtotal, "shipping": shipping, "tax": tax, "total": subtotal + shipping + tax}
+    return {"subtotal": subtotal, "shipping": shipping, "total": subtotal + shipping}
 
 
 def place_order(name, email, address, items=None):
     items = cart_items() if items is None else items
     if not items:
-        raise ValueError("Cart is empty")
+        raise ValueError("Корзина пуста")
     totals = cart_totals(items)
     try:
         customer = get_or_create_customer(name=name, email=email, address=address)
@@ -108,9 +109,9 @@ def place_order(name, email, address, items=None):
         db.session.add(order)
         db.session.flush()
         for item in items:
-            product = db.session.get(type(item["product"]), item["product"].id, with_for_update=True)
+            product = db.session.get(Product, item["product"].id, with_for_update=True)
             if product.stock < item["quantity"]:
-                raise ValueError(f"Not enough stock for {product.name}.")
+                raise ValueError(f"Недостаточно товара на складе: {product.name}.")
             product.stock -= item["quantity"]
             order.items.append(
                 OrderItem(
@@ -156,3 +157,59 @@ def to_product_dict(product):
         "featured": product.featured,
         "image_url": product.image_url,
     }
+
+
+def cart_payload(items=None):
+    items = cart_items() if items is None else items
+    totals = cart_totals(items)
+    return {
+        "count": cart_count(),
+        "items": [
+            {
+                "product": to_product_dict(item["product"]),
+                "quantity": item["quantity"],
+                "line_total": str(item["line_total"]),
+            }
+            for item in items
+        ],
+        "totals": {key: str(value) for key, value in totals.items()},
+    }
+
+
+def hash_password(password):
+    return generate_password_hash(password)
+
+
+def authenticate_user(email, password):
+    user = get_user_by_email(email.strip().lower())
+    if user and check_password_hash(user.password_hash, password):
+        return user
+    return None
+
+
+def login_user(user):
+    session["user_id"] = user.id
+
+
+def logout_user():
+    session.pop("user_id", None)
+
+
+def current_user():
+    user_id = session.get("user_id")
+    return get_user(user_id) if user_id else None
+
+
+def admin_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        user = current_user()
+        if not user:
+            flash("Войдите как администратор, чтобы открыть панель управления.", "error")
+            return redirect(url_for("ui.login"))
+        if not user.is_admin:
+            flash("У вас нет прав администратора для управления товарами и ролями.", "error")
+            return redirect(url_for("ui.home"))
+        return view(*args, **kwargs)
+
+    return wrapped

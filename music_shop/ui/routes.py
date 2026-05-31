@@ -5,9 +5,16 @@ from music_shop.data import repositories as repo
 from music_shop.data.database import db
 from music_shop.data.services import (
     DEFAULT_IMAGE,
+    ROLE_LABELS,
     add_to_cart,
+    admin_required,
+    authenticate_user,
     cart_items,
     cart_totals,
+    current_user,
+    hash_password,
+    login_user,
+    logout_user,
     place_order,
     product_gallery,
     product_payload_from_form,
@@ -34,11 +41,30 @@ def home():
     )
 
 
+@ui.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        user = authenticate_user(request.form["email"], request.form["password"])
+        if user:
+            login_user(user)
+            flash("Вы вошли в систему.", "success")
+            return redirect(url_for("ui.admin_dashboard") if user.is_admin else url_for("ui.home"))
+        flash("Неверная электронная почта или пароль.", "error")
+    return render_template("login.html")
+
+
+@ui.post("/logout")
+def logout():
+    logout_user()
+    flash("Вы вышли из системы.", "success")
+    return redirect(url_for("ui.home"))
+
+
 @ui.route("/products/<slug>")
 def product_detail(slug):
     product = repo.get_product_by_slug(slug)
     if not product:
-        flash("Product not found.", "error")
+        flash("Товар не найден.", "error")
         return redirect(url_for("ui.home"))
     return render_template("product_detail.html", product=product, gallery=product_gallery(product))
 
@@ -46,9 +72,9 @@ def product_detail(slug):
 @ui.post("/cart/add/<int:product_id>")
 def add_cart_item(product_id):
     if add_to_cart(product_id, request.form.get("quantity", 1)):
-        flash("Added item to cart.", "success")
+        flash("Товар добавлен в корзину.", "success")
     else:
-        flash("That product is currently out of stock.", "error")
+        flash("Товар сейчас недоступен.", "error")
     return redirect(request.referrer or url_for("ui.cart"))
 
 
@@ -61,7 +87,7 @@ def cart():
             if key.startswith("quantity_")
         }
         update_cart(quantities)
-        flash("Cart updated.", "success")
+        flash("Корзина обновлена.", "success")
         return redirect(url_for("ui.cart"))
     items = cart_items()
     return render_template("cart.html", items=items, totals=cart_totals(items))
@@ -71,7 +97,7 @@ def cart():
 def checkout():
     items = cart_items()
     if not items:
-        flash("Your cart is empty.", "error")
+        flash("Ваша корзина пуста.", "error")
         return redirect(url_for("ui.cart"))
     totals = cart_totals(items)
     if request.method == "POST":
@@ -85,7 +111,7 @@ def checkout():
         except ValueError as error:
             flash(str(error), "error")
             return redirect(url_for("ui.cart"))
-        flash("Order placed successfully.", "success")
+        flash("Заказ успешно оформлен.", "success")
         return redirect(url_for("ui.confirmation", order_number=order.order_number))
     return render_template("checkout.html", items=items, totals=totals)
 
@@ -106,62 +132,108 @@ def account():
 
 
 @ui.route("/admin")
+@admin_required
 def admin_dashboard():
     categories = repo.list_categories()
     products = repo.list_products()
     orders = repo.list_orders()
-    return render_template("admin/dashboard.html", categories=categories, products=products, orders=orders, revenue=repo.total_revenue())
+    users = repo.list_users()
+    return render_template(
+        "admin/dashboard.html",
+        categories=categories,
+        products=products,
+        orders=orders,
+        revenue=repo.total_revenue(),
+        users=users,
+        role_labels=ROLE_LABELS,
+    )
 
 
 @ui.route("/admin/products/new", methods=["GET", "POST"])
 @ui.route("/admin/products/<int:product_id>/edit", methods=["GET", "POST"])
+@admin_required
 def admin_product_form(product_id=None):
     product = repo.get_product(product_id) if product_id else None
     if request.method == "POST":
         try:
             repo.save_product(product, **product_payload_from_form(request.form, request.files, product))
-            flash("Product updated." if product else "Product created.", "success")
+            flash("Товар обновлен." if product else "Товар создан.", "success")
             return redirect(url_for("ui.admin_dashboard"))
         except IntegrityError:
             db.session.rollback()
-            flash("Product slug must be unique.", "error")
+            flash("Адрес товара должен быть уникальным.", "error")
     return render_template("admin/product_form.html", product=product, categories=repo.list_categories())
 
 
 @ui.post("/admin/products/<int:product_id>/delete")
+@admin_required
 def admin_delete_product(product_id):
     try:
         repo.delete_product(product_id)
-        flash("Product deleted.", "success")
+        flash("Товар удален.", "success")
     except IntegrityError:
         db.session.rollback()
-        flash("Product cannot be deleted because it belongs to an order.", "error")
+        flash("Нельзя удалить товар, который есть в заказе.", "error")
     return redirect(url_for("ui.admin_dashboard"))
 
 
 @ui.post("/admin/categories")
+@admin_required
 def admin_add_category():
     try:
         name = request.form["name"].strip()
         repo.create_category(
             slug=slugify(name),
             name=name,
-            description=request.form.get("description") or "Custom admin-created category.",
+            description=request.form.get("description") or "Пользовательская категория.",
             image_url=request.form.get("image_url") or DEFAULT_IMAGE,
         )
-        flash("Category added.", "success")
+        flash("Категория добавлена.", "success")
     except IntegrityError:
         db.session.rollback()
-        flash("Category slug must be unique.", "error")
+        flash("Адрес категории должен быть уникальным.", "error")
     return redirect(url_for("ui.admin_dashboard"))
 
 
 @ui.post("/admin/categories/<int:category_id>/delete")
+@admin_required
 def admin_delete_category(category_id):
     try:
         repo.delete_category(category_id)
-        flash("Category deleted.", "success")
+        flash("Категория удалена.", "success")
     except IntegrityError:
         db.session.rollback()
-        flash("Category cannot be deleted while products use it.", "error")
+        flash("Нельзя удалить категорию, пока в ней есть товары.", "error")
+    return redirect(url_for("ui.admin_dashboard"))
+
+
+@ui.post("/admin/users")
+@admin_required
+def admin_create_user():
+    try:
+        role = request.form["role"] if request.form["role"] in ROLE_LABELS else "viewer"
+        repo.create_user(
+            email=request.form["email"].strip().lower(),
+            name=request.form["name"].strip(),
+            password_hash=hash_password(request.form["password"]),
+            role=role,
+        )
+        flash("Учетная запись создана.", "success")
+    except IntegrityError:
+        db.session.rollback()
+        flash("Пользователь с такой электронной почтой уже существует.", "error")
+    return redirect(url_for("ui.admin_dashboard"))
+
+
+@ui.post("/admin/users/<int:user_id>/role")
+@admin_required
+def admin_update_user_role(user_id):
+    role = request.form["role"] if request.form["role"] in ROLE_LABELS else "viewer"
+    user = repo.update_user_role(user_id, role)
+    if user and current_user() and user.id == current_user().id and user.role != "admin":
+        user.role = "admin"
+        db.session.commit()
+        flash("Нельзя снять роль администратора у своей учетной записи.", "error")
+    else:
+        flash("Роль пользователя обновлена.", "success")
     return redirect(url_for("ui.admin_dashboard"))
