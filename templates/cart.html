@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Корзина · Музыкальный магазин{% endblock %}
+{% block content %}
+<section class="section page-section">
+  <div class="section-heading"><p class="eyebrow">Корзина</p><h1>Проверьте заказ</h1></div>
+  <div class="cart-layout">
+    <form method="post" class="cart-items" id="cart-items">
+      {% for item in items %}
+        <article class="cart-item"><img src="{{ item.product.image_url }}" alt="{{ item.product.name }}"><div><h2>{{ item.product.name }}</h2><p>{{ item.product.price|currency }} за штуку</p><label class="field compact">Количество<input name="quantity_{{ item.product.id }}" type="number" min="0" max="{{ item.product.stock }}" value="{{ item.quantity }}"></label></div><strong>{{ item.line_total|currency }}</strong></article>
+      {% else %}
+        <p class="empty-state">Ваша корзина пуста. Перейдите в каталог, чтобы добавить товары.</p>
+      {% endfor %}
+      {% if items %}<button class="button ghost">Обновить корзину</button>{% endif %}
+    </form>
+    <aside class="summary-card" id="cart-summary"><h2>Итог заказа</h2><p><span>Товары</span><strong>{{ totals.subtotal|currency }}</strong></p><p><span>Доставка</span><strong>{{ totals.shipping|currency }}</strong></p><p class="summary-total"><span>Итого</span><strong>{{ totals.total|currency }}</strong></p><a class="button primary {{ '' if items else 'disabled' }}" href="{{ url_for('ui.checkout') if items else url_for('ui.home') }}">{{ 'Оформить заказ' if items else 'Перейти в каталог' }}</a></aside>
+  </div>
+</section>
+{% endblock %}

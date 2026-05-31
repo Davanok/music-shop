@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Вход · Музыкальный магазин{% endblock %}
+{% block content %}
+<section class="section page-section narrow">
+  <div class="section-heading"><p class="eyebrow">Панель управления</p><h1>Вход администратора</h1></div>
+  <form class="form-card" method="post">
+    <label class="field">Электронная почта<input name="email" type="email" autocomplete="email" required></label>
+    <label class="field">Пароль<input name="password" type="password" autocomplete="current-password" required></label>
+    <button class="button primary">Войти</button>
+    <p>Начальный администратор после `init-db`: <strong>admin@music-shop.local</strong> / <strong>admin12345</strong>.</p>
+  </form>
+</section>
+{% endblock %}
