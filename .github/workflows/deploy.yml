@@ -1,0 +1,62 @@
+name: Deploy via SSH Password
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+            ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Sync files to server
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz \
+            --exclude ".venv" \
+            --exclude ".env" \
+            --exclude "__pycache__" \
+            --exclude ".git" \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_PATH }}
+      - name: Install dependencies on server
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+
+              cd ${{ secrets.REMOTE_PATH }}
+
+              # создаём venv если нет
+              if [ ! -d ".venv" ]; then
+                python3 -m venv .venv
+              fi
+
+              # активируем venv
+              source .venv/bin/activate
+
+              # обновляем pip
+              pip install --upgrade pip
+
+              # ставим зависимости
+              pip install -r requirements.txt
+
+          EOF
+      - name: Restart systemd service
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+              sudo systemctl restart music-shop
+              sudo systemctl status music-shop --no-pager
+          EOF
