@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 
 from .database import db
 from .models import Order, OrderItem, Product
-from .repositories import get_or_create_customer, get_product, get_setting, get_user, get_user_by_email, list_products_by_ids
+from .repositories import get_product, get_setting, get_user, get_user_by_email, list_products_by_ids
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 DEFAULT_IMAGE = "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=900&q=80"
@@ -119,33 +119,79 @@ def cart_totals(items=None):
     return {"subtotal": subtotal, "shipping": shipping, "total": subtotal + shipping}
 
 
-def place_order(name, email, address, items=None):
+
+def place_order(name, email, address_data, items=None):
     items = cart_items() if items is None else items
+
     if not items:
         raise ValueError("Корзина пуста")
-    totals = cart_totals(items)
+
+    user = get_user_by_email(email)
+    if not user:
+        raise ValueError("Пользователь не найден")
+
+    if isinstance(address_data, str):
+        raise ValueError("Некорректный формат адреса")
+
     try:
-        customer = get_or_create_customer(name=name, email=email, address=address)
-        order = Order(order_number=f"ORD-{uuid.uuid4().hex[:10].upper()}", customer=customer, **totals)
+        # адрес
+        address = create_address(
+            user_id=user.id,
+            country=address_data["country"],
+            city=address_data["city"],
+            street=address_data["street"],
+            postal_code=address_data["postal_code"],
+        )
+
+        # статус заказа
+        status = get_order_status("Оформлен")
+        if not status:
+            raise ValueError("Статус заказа не найден")
+
+        # заказ
+        order = Order(
+            order_number=f"ORD-{uuid.uuid4().hex[:10].upper()}",
+            user_id=user.id,
+            address_id=address.id,
+            status_id=status.id,
+            shipping=Decimal(str(cart_totals(items)["shipping"])),
+        )
+
         db.session.add(order)
         db.session.flush()
+
+        # позиции заказа
         for item in items:
-            product = db.session.get(Product, item["product"].id, with_for_update=True)
+            product = db.session.get(
+                Product,
+                item["product"].id,
+                with_for_update=True,
+            )
+
+            if not product:
+                raise ValueError("Товар не найден")
+
             if product.stock < item["quantity"]:
-                raise ValueError(f"Недостаточно товара на складе: {product.name}.")
+                raise ValueError(
+                    f"Недостаточно товара на складе: {product.name}"
+                )
+
             product.stock -= item["quantity"]
-            order.items.append(
+
+            db.session.add(
                 OrderItem(
-                    product=product,
-                    product_name=product.name,
-                    unit_price=product.price,
+                    order_id=order.id,
+                    product_id=product.id,
                     quantity=item["quantity"],
-                    line_total=item["line_total"],
+                    unit_price=product.price,
                 )
             )
+
         db.session.commit()
         clear_cart()
+
         return order
+
     except Exception:
         db.session.rollback()
         raise
