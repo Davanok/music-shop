@@ -26,7 +26,7 @@ let cart = read(cartStorageKey, []);
 let orders = read(orderStorageKey, []);
 let uploadedImage = "";
 
-const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+const money = new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" });
 const $ = (selector) => document.querySelector(selector);
 
 function read(key, fallback) {

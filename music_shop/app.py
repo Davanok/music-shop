@@ -32,6 +32,6 @@ def create_app(config_object=Config):
 
     @app.template_filter("currency")
     def currency(value):
-        return f"${Decimal(value):,.2f}"
+        return f"{Decimal(value):,.2f}₽"
 
     return app

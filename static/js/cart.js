@@ -1,4 +1,4 @@
-const currencyFormatter = new Intl.NumberFormat("ru-RU", { style: "currency", currency: "USD" });
+const currencyFormatter = new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" });
 
 function formatCurrency(value) {
   return currencyFormatter.format(Number(value));
