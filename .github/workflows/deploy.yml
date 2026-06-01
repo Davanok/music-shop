@@ -18,15 +18,17 @@ jobs:
       - name: Add SSH known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+            ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
       - name: Sync files to server
         run: |
-          rsync -avz \
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz \
             --exclude ".venv" \
             --exclude ".env" \
             --exclude "__pycache__" \
             --exclude ".git" \
-            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_PATH }}
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_PATH }}
       - name: Restart systemd service
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh \
