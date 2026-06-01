@@ -2,7 +2,7 @@ import json
 from decimal import Decimal
 
 from .database import db
-from .models import Category, Product, User
+from .models import AppSetting, Category, Product, User
 from .services import DEFAULT_IMAGE, hash_password
 
 SEED_CATEGORIES = [
@@ -44,6 +44,10 @@ def seed_data():
         product.image_url = image_url
         product.gallery_json = json.dumps([image_url])
         db.session.add(product)
+
+    setting = AppSetting.query.filter_by(key="delivery_price").one_or_none() or AppSetting(key="delivery_price")
+    setting.value = "500.00"
+    db.session.add(setting)
 
     if not User.query.filter_by(email="admin@music-shop.local").one_or_none():
         db.session.add(

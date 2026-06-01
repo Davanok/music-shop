@@ -17,3 +17,6 @@ ON DUPLICATE KEY UPDATE name = VALUES(name), category_id = VALUES(category_id), 
 INSERT INTO users (email, name, password_hash, role) VALUES
 ('admin@music-shop.local', 'Главный администратор', 'pbkdf2:sha256:1000000$musicshopsalt$8358d72fb9e73560c4c57a2f1f0b549f42351139a59f99823802b4ed12623e7e', 'admin')
 ON DUPLICATE KEY UPDATE name = VALUES(name), role = VALUES(role);
+
+INSERT INTO app_settings (`key`, value) VALUES ('delivery_price', '500.00')
+ON DUPLICATE KEY UPDATE value = VALUES(value);

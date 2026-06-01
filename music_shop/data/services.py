@@ -11,11 +11,11 @@ from werkzeug.utils import secure_filename
 
 from .database import db
 from .models import Order, OrderItem, Product
-from .repositories import get_or_create_customer, get_product, get_user, get_user_by_email, list_products_by_ids
+from .repositories import get_or_create_customer, get_product, get_setting, get_user, get_user_by_email, list_products_by_ids
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 DEFAULT_IMAGE = "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=900&q=80"
-SHIPPING_RATE = Decimal("24.00")
+DEFAULT_DELIVERY_PRICE = Decimal("500.00")
 ROLE_LABELS = {"admin": "Администратор", "manager": "Менеджер", "viewer": "Наблюдатель"}
 
 
@@ -108,10 +108,14 @@ def cart_items():
     return items
 
 
+def delivery_price():
+    return Decimal(get_setting("delivery_price", str(DEFAULT_DELIVERY_PRICE)))
+
+
 def cart_totals(items=None):
     items = cart_items() if items is None else items
     subtotal = sum((item["line_total"] for item in items), Decimal("0.00"))
-    shipping = SHIPPING_RATE if subtotal > 0 else Decimal("0.00")
+    shipping = delivery_price() if subtotal > 0 else Decimal("0.00")
     return {"subtotal": subtotal, "shipping": shipping, "total": subtotal + shipping}
 
 

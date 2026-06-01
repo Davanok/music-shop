@@ -2,7 +2,7 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.orm import joinedload
 
 from .database import db
-from .models import Category, Customer, Order, Product, User
+from .models import AppSetting, Category, Customer, Order, Product, User
 
 
 def list_categories():
@@ -137,3 +137,16 @@ def update_user_role(user_id, role):
         user.role = role
         db.session.commit()
     return user
+
+
+def get_setting(key, default=None):
+    setting = db.session.scalar(select(AppSetting).where(AppSetting.key == key))
+    return setting.value if setting else default
+
+
+def set_setting(key, value):
+    setting = db.session.scalar(select(AppSetting).where(AppSetting.key == key)) or AppSetting(key=key)
+    setting.value = str(value)
+    db.session.add(setting)
+    db.session.commit()
+    return setting
