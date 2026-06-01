@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Вход · Музыкальный магазин{% endblock %}
+{% block content %}
+<section class="section page-section narrow">
+  <div class="section-heading"><p class="eyebrow">Личный кабинет</p><h1>Вход для покупателей</h1></div>
+  <form class="form-card" method="post">
+    <label class="field">Электронная почта<input name="email" type="email" autocomplete="email" required></label>
+    <label class="field">Пароль<input name="password" type="password" autocomplete="current-password" required></label>
+    <button class="button primary">Войти</button>
+    <p>Еще нет учетной записи? <a href="{{ url_for('ui.signup') }}">Зарегистрироваться</a>.</p>
+    <p>Администратор? <a href="{{ url_for('ui.admin_login') }}">Войти в панель управления</a>.</p>
+  </form>
+</section>
+{% endblock %}

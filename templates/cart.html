@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Корзина · Музыкальный магазин{% endblock %}
+{% block content %}
+<section class="section page-section">
+  <div class="section-heading"><p class="eyebrow">Корзина</p><h1>Проверьте заказ</h1></div>
+  <div class="cart-layout">
+    <div class="cart-items" id="cart-items" aria-live="polite">
+      {% for item in items %}
+        <article class="cart-item" data-product-id="{{ item.product.id }}"><img src="{{ item.product.image_url }}" alt="{{ item.product.name }}"><div><h2>{{ item.product.name }}</h2><p>{{ item.product.price|currency }} за штуку</p><label class="field compact">Количество<input class="cart-quantity-input" name="quantity_{{ item.product.id }}" type="number" min="0" max="{{ item.product.stock }}" value="{{ item.quantity }}" data-product-id="{{ item.product.id }}"></label></div><strong>{{ item.line_total|currency }}</strong><button class="link-button remove-cart-item" type="button" data-product-id="{{ item.product.id }}">Удалить</button></article>
+      {% else %}
+        <p class="empty-state">Ваша корзина пуста. Перейдите в каталог, чтобы добавить товары.</p>
+      {% endfor %}
+    </div>
+    <aside class="summary-card" id="cart-summary"><h2>Итог заказа</h2><p><span>Товары</span><strong>{{ totals.subtotal|currency }}</strong></p><p><span>Доставка</span><strong>{{ totals.shipping|currency }}</strong></p><p class="summary-total"><span>Итого</span><strong>{{ totals.total|currency }}</strong></p><a class="button primary {{ '' if items else 'disabled' }}" href="{{ url_for('ui.checkout') if items else url_for('ui.home') }}">{{ 'Оформить заказ' if items else 'Перейти в каталог' }}</a></aside>
+  </div>
+</section>
+{% endblock %}
