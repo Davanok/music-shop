@@ -28,6 +28,6 @@ jobs:
           sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh \
             -o StrictHostKeyChecking=no \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-              sudo systemctl restart your-service-name
-              sudo systemctl status your-service-name --no-pager
+              sudo systemctl restart music-shop
+              sudo systemctl status music-shop --no-pager
           EOF
