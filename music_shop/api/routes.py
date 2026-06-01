@@ -1,9 +1,17 @@
 from flask import Blueprint, jsonify, request
 
 from music_shop.data import repositories as repo
-from music_shop.data.services import add_to_cart, cart_payload, to_product_dict
+from music_shop.data.services import add_to_cart, cart_payload, remove_from_cart, set_cart_quantity, to_product_dict
 
 api = Blueprint("api", __name__, url_prefix="/api")
+
+
+def read_quantity(default=1):
+    payload = request.get_json(silent=True) or request.form
+    try:
+        return int(payload.get("quantity", default))
+    except (TypeError, ValueError):
+        return default
 
 
 @api.get("/products")
@@ -40,6 +48,22 @@ def cart():
 @api.post("/cart/items")
 def add_cart_item():
     payload = request.get_json(silent=True) or request.form
-    if not add_to_cart(int(payload["product_id"]), int(payload.get("quantity", 1))):
+    try:
+        product_id = int(payload["product_id"])
+    except (KeyError, TypeError, ValueError):
+        return jsonify({"error": "Некорректный товар"}), 400
+    if not add_to_cart(product_id, read_quantity()):
         return jsonify({"error": "Товар недоступен"}), 400
     return jsonify(cart_payload()), 201
+
+
+@api.patch("/cart/items/<int:product_id>")
+def update_cart_item(product_id):
+    set_cart_quantity(product_id, read_quantity(default=0))
+    return jsonify(cart_payload())
+
+
+@api.delete("/cart/items/<int:product_id>")
+def delete_cart_item(product_id):
+    remove_from_cart(product_id)
+    return jsonify(cart_payload())

@@ -75,6 +75,23 @@ def update_cart(quantities):
     session["cart"] = cart
 
 
+def set_cart_quantity(product_id, quantity):
+    product = get_product(int(product_id))
+    cart = get_cart()
+    safe_quantity = max(int(quantity), 0)
+    if not product or safe_quantity == 0:
+        cart.pop(str(product_id), None)
+    else:
+        cart[str(product_id)] = min(safe_quantity, product.stock)
+    session.modified = True
+
+
+def remove_from_cart(product_id):
+    cart = get_cart()
+    cart.pop(str(product_id), None)
+    session.modified = True
+
+
 def clear_cart():
     session["cart"] = {}
 
@@ -206,7 +223,7 @@ def admin_required(view):
         user = current_user()
         if not user:
             flash("Войдите как администратор, чтобы открыть панель управления.", "error")
-            return redirect(url_for("ui.login"))
+            return redirect(url_for("ui.admin_login"))
         if not user.is_admin:
             flash("У вас нет прав администратора для управления товарами и ролями.", "error")
             return redirect(url_for("ui.home"))

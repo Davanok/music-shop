@@ -45,12 +45,51 @@ def home():
 def login():
     if request.method == "POST":
         user = authenticate_user(request.form["email"], request.form["password"])
+        if user and user.is_admin:
+            flash("Администраторы входят через отдельную страницу.", "error")
+            return redirect(url_for("ui.admin_login"))
         if user:
             login_user(user)
             flash("Вы вошли в систему.", "success")
-            return redirect(url_for("ui.admin_dashboard") if user.is_admin else url_for("ui.home"))
+            return redirect(url_for("ui.home"))
         flash("Неверная электронная почта или пароль.", "error")
     return render_template("login.html")
+
+
+@ui.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form["email"].strip().lower()
+        existing_user = repo.get_user_by_email(email)
+        if existing_user:
+            flash("Пользователь с такой электронной почтой уже существует.", "error")
+            return render_template("signup.html")
+        try:
+            user = repo.create_user(
+                email=email,
+                name=request.form["name"].strip(),
+                password_hash=hash_password(request.form["password"]),
+                role="viewer",
+            )
+            login_user(user)
+            flash("Регистрация завершена. Вы вошли в систему.", "success")
+            return redirect(url_for("ui.home"))
+        except IntegrityError:
+            db.session.rollback()
+            flash("Не удалось создать учетную запись. Попробуйте другую электронную почту.", "error")
+    return render_template("signup.html")
+
+
+@ui.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        user = authenticate_user(request.form["email"], request.form["password"])
+        if user and user.is_admin:
+            login_user(user)
+            flash("Вы вошли как администратор.", "success")
+            return redirect(url_for("ui.admin_dashboard"))
+        flash("Доступ разрешен только администраторам.", "error")
+    return render_template("admin/login.html")
 
 
 @ui.post("/logout")

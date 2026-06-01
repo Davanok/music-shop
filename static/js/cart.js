@@ -1,4 +1,5 @@
-const currencyFormatter = new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" });
+const currencyFormatter = new Intl.NumberFormat("ru-RU", { style: "currency", currency: "USD" });
+const quantityTimers = new Map();
 
 function formatCurrency(value) {
   return currencyFormatter.format(Number(value));
@@ -23,19 +24,19 @@ function renderCartItems(cart) {
     container.innerHTML = '<p class="empty-state">Ваша корзина пуста. Перейдите в каталог, чтобы добавить товары.</p>';
     return;
   }
-  const rows = cart.items.map((item) => `
-    <article class="cart-item">
+  container.innerHTML = cart.items.map((item) => `
+    <article class="cart-item" data-product-id="${item.product.id}">
       <img src="${item.product.image_url}" alt="${item.product.name}">
       <div>
         <h2>${item.product.name}</h2>
         <p>${formatCurrency(item.product.price)} за штуку</p>
         <label class="field compact">Количество
-          <input name="quantity_${item.product.id}" type="number" min="0" max="${item.product.stock}" value="${item.quantity}">
+          <input class="cart-quantity-input" name="quantity_${item.product.id}" type="number" min="0" max="${item.product.stock}" value="${item.quantity}" data-product-id="${item.product.id}">
         </label>
       </div>
       <strong>${formatCurrency(item.line_total)}</strong>
+      <button class="link-button remove-cart-item" type="button" data-product-id="${item.product.id}">Удалить</button>
     </article>`).join("");
-  container.innerHTML = `${rows}<button class="button ghost">Обновить корзину</button>`;
 }
 
 function renderCartSummary(cart) {
@@ -59,27 +60,68 @@ function applyCart(cart) {
   renderCartSummary(cart);
 }
 
+async function requestCart(url, options = {}) {
+  const response = await fetch(url, {
+    headers: { "Content-Type": "application/json", "Accept": "application/json", ...(options.headers || {}) },
+    ...options,
+  });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error || "Не удалось обновить корзину.");
+  }
+  applyCart(payload);
+  return payload;
+}
+
 async function addToCart(form) {
   const formData = new FormData(form);
   const productId = form.dataset.productId;
   const quantity = formData.get("quantity") || "1";
-  const response = await fetch("/api/cart/items", {
+  await requestCart("/api/cart/items", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "Accept": "application/json" },
     body: JSON.stringify({ product_id: productId, quantity }),
   });
-  const payload = await response.json();
-  if (!response.ok) {
-    showToast(payload.error || "Не удалось добавить товар в корзину.", true);
-    return;
-  }
-  applyCart(payload);
   showToast("Товар добавлен в корзину.");
+}
+
+function scheduleQuantityUpdate(input) {
+  const productId = input.dataset.productId;
+  const quantity = input.value || "0";
+  window.clearTimeout(quantityTimers.get(productId));
+  quantityTimers.set(productId, window.setTimeout(async () => {
+    try {
+      await requestCart(`/api/cart/items/${productId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ quantity }),
+      });
+      showToast("Корзина обновлена.");
+    } catch (error) {
+      showToast(error.message, true);
+    }
+  }, 250));
+}
+
+async function removeCartItem(button) {
+  const productId = button.dataset.productId;
+  await requestCart(`/api/cart/items/${productId}`, { method: "DELETE" });
+  showToast("Товар удален из корзины.");
 }
 
 document.addEventListener("submit", (event) => {
   const form = event.target.closest(".add-to-cart-form");
   if (!form) return;
   event.preventDefault();
-  addToCart(form).catch(() => showToast("Не удалось обновить корзину. Попробуйте еще раз.", true));
+  addToCart(form).catch((error) => showToast(error.message || "Не удалось обновить корзину. Попробуйте еще раз.", true));
+});
+
+document.addEventListener("input", (event) => {
+  const input = event.target.closest(".cart-quantity-input");
+  if (!input) return;
+  scheduleQuantityUpdate(input);
+});
+
+document.addEventListener("click", (event) => {
+  const button = event.target.closest(".remove-cart-item");
+  if (!button) return;
+  removeCartItem(button).catch((error) => showToast(error.message || "Не удалось удалить товар.", true));
 });
