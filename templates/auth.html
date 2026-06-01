@@ -1,26 +1,92 @@
 {% extends "base.html" %}
+
 {% block title %}Вход / регистрация · Музыкальный магазин{% endblock %}
+
 {% block content %}
 <section class="section page-section">
-  <div class="section-heading"><p class="eyebrow">Личный кабинет</p><h1>Вход / регистрация</h1></div>
+  <div class="section-heading">
+    <p class="eyebrow">Личный кабинет</p>
+    <h1>Вход / регистрация</h1>
+  </div>
+
   <div class="admin-layout">
-    <form class="form-card" method="post">
+
+    <form class="form-card" method="post" autocomplete="on">
       <input type="hidden" name="action" value="login">
+
       <h2>Войти</h2>
-      <label class="field">Электронная почта<input name="email" type="email" autocomplete="email" required></label>
-      <label class="field">Пароль<input name="password" type="password" autocomplete="current-password" required></label>
-      <button class="button primary">Войти</button>
-      <p>Администратор? <a href="{{ url_for('ui.admin_login') }}">Перейти к отдельному входу</a>.</p>
+
+      <label class="field">
+        Электронная почта
+        <input
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+        >
+      </label>
+
+      <label class="field">
+        Пароль
+        <input
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          required
+        >
+      </label>
+
+      <button type="submit" class="button primary">Войти</button>
+
+      <p>
+        Администратор?
+        <a href="{{ url_for('ui.admin_login') }}">Перейти к отдельному входу</a>
+      </p>
     </form>
-    <form class="form-card" method="post">
+
+    <form class="form-card" method="post" autocomplete="on">
       <input type="hidden" name="action" value="signup">
-      <h2>Зарегистрироваться</h2>
-      <label class="field">Имя<input name="name" autocomplete="name" required></label>
-      <label class="field">Электронная почта<input name="email" type="email" autocomplete="email" required></label>
-      <label class="field">Пароль<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
-      <button class="button primary">Создать учетную запись</button>
-      <p>Публичная регистрация создает только учетную запись покупателя.</p>
+
+      <h2>Регистрация</h2>
+
+      <label class="field">
+        Имя
+        <input
+          name="name"
+          type="text"
+          autocomplete="name"
+          required
+        >
+      </label>
+
+      <label class="field">
+        Электронная почта
+        <input
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+        >
+      </label>
+
+      <label class="field">
+        Пароль
+        <input
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          minlength="8"
+          required
+        >
+      </label>
+
+      <button type="submit" class="button primary">Создать аккаунт</button>
+
+      <p class="hint">
+        Публичная регистрация создаёт только аккаунт покупателя.
+      </p>
     </form>
+
   </div>
 </section>
 {% endblock %}

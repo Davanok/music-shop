@@ -43,7 +43,8 @@ def home():
 
 @ui.route("/auth", methods=["GET", "POST"])
 def auth():
-    if current_user() and current_user().is_admin:
+    user = current_user()
+    if user and user.is_admin:
         return redirect(url_for("ui.admin_dashboard"))
     if request.method == "POST":
         action = request.form.get("action", "login")
@@ -78,14 +79,13 @@ def auth():
     return render_template("auth.html")
 
 
-@ui.route("/login", methods=["GET", "POST"])
+@ui.route("/login")
 def login():
-    return auth()
+    return redirect(url_for("ui.auth"))
 
-
-@ui.route("/signup", methods=["GET", "POST"])
+@ui.route("/signup")
 def signup():
-    return auth()
+    return redirect(url_for("ui.auth"))
 
 
 @ui.route("/admin/login", methods=["GET", "POST"])
