@@ -18,11 +18,12 @@ jobs:
 
       - name: Sync files to server
         run: |
-          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete \
-            -e "ssh -o StrictHostKeyChecking=no" \
-            ./ \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_PATH }}
-
+          rsync -avz \
+            --exclude ".venv" \
+            --exclude ".env" \
+            --exclude "__pycache__" \
+            --exclude ".git" \
+            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_PATH }}
       - name: Restart systemd service
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh \
