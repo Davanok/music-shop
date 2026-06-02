@@ -1,8 +1,34 @@
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
 .venv/
+env.bak/
+venv.bak/
+
+# Environment variables
 .env
 .env*.local
-static/uploads/*
+
+# Database
+*.db
+*.sqlite3
+instance/
+
+# Static uploads
+static/uploads/
 !static/uploads/.gitkeep
+
+# Logs
+*.log
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
