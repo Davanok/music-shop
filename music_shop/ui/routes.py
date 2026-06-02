@@ -162,12 +162,22 @@ def checkout():
         flash("Ваша корзина пуста.", "error")
         return redirect(url_for("ui.cart"))
     totals = cart_totals(items)
+    user = current_user()
+    if not user or user.is_admin:
+        flash("Войдите как покупатель, чтобы оформить заказ.", "error")
+        return redirect(url_for("ui.login"))
+
     if request.method == "POST":
         try:
             order = place_order(
-                request.form["name"].strip(),
-                request.form["email"].strip().lower(),
-                request.form["address"].strip(),
+                user.name,
+                user.email,
+                {
+                    "country": request.form.get("country", ""),
+                    "city": request.form.get("city", ""),
+                    "street": request.form.get("street", ""),
+                    "postal_code": request.form.get("postal_code", ""),
+                },
                 items,
             )
         except ValueError as error:
@@ -175,7 +185,7 @@ def checkout():
             return redirect(url_for("ui.cart"))
         flash("Заказ успешно оформлен.", "success")
         return redirect(url_for("ui.confirmation", order_number=order.order_number))
-    return render_template("checkout.html", items=items, totals=totals)
+    return render_template("checkout.html", items=items, totals=totals, user=user)
 
 
 @ui.route("/confirmation/<order_number>")
