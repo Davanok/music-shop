@@ -41,63 +41,76 @@ def home():
     )
 
 
-@ui.route("/auth", methods=["GET", "POST"])
-def auth():
-    user = current_user()
-    if user and user.is_admin:
-        return redirect(url_for("ui.admin_dashboard"))
-    if request.method == "POST":
-        action = request.form.get("action", "login")
-        email = request.form["email"].strip().lower()
-        if action == "signup":
-            if repo.get_user_by_email(email):
-                flash("Пользователь с такой электронной почтой уже существует.", "error")
-                return render_template("auth.html")
-            try:
-                user = repo.create_user(
-                    email=email,
-                    name=request.form["name"].strip(),
-                    password_hash=hash_password(request.form["password"]),
-                    role="viewer",
-                )
-                login_user(user)
-                flash("Регистрация завершена. Вы вошли в систему.", "success")
-                return redirect(url_for("ui.home"))
-            except IntegrityError:
-                db.session.rollback()
-                flash("Не удалось создать учетную запись. Попробуйте другую электронную почту.", "error")
-        else:
-            user = authenticate_user(email, request.form["password"])
-            if user and user.is_admin:
-                flash("Администраторы входят через отдельную страницу.", "error")
-                return redirect(url_for("ui.admin_login"))
-            if user:
-                login_user(user)
-                flash("Вы вошли в систему.", "success")
-                return redirect(url_for("ui.home"))
-            flash("Неверная электронная почта или пароль.", "error")
-    return render_template("auth.html")
-
-
-@ui.route("/login")
+@ui.route("/login", methods=["GET", "POST"])
 def login():
-    return redirect(url_for("ui.auth"))
+    user = current_user()
+    if user:
+        return redirect(
+            url_for("ui.admin_dashboard")
+            if user.is_admin
+            else url_for("ui.account")
+        )
 
-@ui.route("/signup")
-def signup():
-    return redirect(url_for("ui.auth"))
-
-
-@ui.route("/admin/login", methods=["GET", "POST"])
-def admin_login():
     if request.method == "POST":
-        user = authenticate_user(request.form["email"], request.form["password"])
-        if user and user.is_admin:
+        user = authenticate_user(
+            request.form["email"].strip().lower(),
+            request.form["password"],
+        )
+
+        if user:
             login_user(user)
-            flash("Вы вошли как администратор.", "success")
-            return redirect(url_for("ui.admin_dashboard"))
-        flash("Доступ разрешен только администраторам.", "error")
-    return render_template("admin/login.html")
+
+            flash("Вы вошли в систему.", "success")
+
+            return redirect(
+                url_for("ui.admin_dashboard")
+                if user.is_admin
+                else url_for("ui.home")
+            )
+
+        flash("Неверная электронная почта или пароль.", "error")
+
+    return render_template("login.html")
+
+
+@ui.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form["email"].strip().lower()
+
+        if repo.get_user_by_email(email):
+            flash(
+                "Пользователь с такой электронной почтой уже существует.",
+                "error",
+            )
+            return render_template("signup.html")
+
+        try:
+            user = repo.create_user(
+                email=email,
+                name=request.form["name"].strip(),
+                password_hash=hash_password(request.form["password"]),
+                role="viewer",
+            )
+
+            login_user(user)
+
+            flash(
+                "Регистрация завершена. Вы вошли в систему.",
+                "success",
+            )
+
+            return redirect(url_for("ui.home"))
+
+        except IntegrityError:
+            db.session.rollback()
+
+            flash(
+                "Не удалось создать учетную запись.",
+                "error",
+            )
+
+    return render_template("signup.html")
 
 
 @ui.post("/logout")
@@ -176,7 +189,7 @@ def account():
     user = current_user()
     if not user or user.is_admin:
         flash("Войдите как покупатель, чтобы посмотреть историю заказов.", "error")
-        return redirect(url_for("ui.auth"))
+        return redirect(url_for("ui.login"))
     orders = repo.list_orders_for_email(user.email)
     return render_template("account.html", orders=orders)
 
