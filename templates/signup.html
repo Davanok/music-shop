@@ -1,1 +1,54 @@
-{% extends "auth.html" %}
+{% extends "base.html" %}
+
+{% block title %}Регистрация · Музыкальный магазин{% endblock %}
+
+{% block content %}
+<section class="section page-section">
+  <div class="section-heading">
+    <p class="eyebrow">Личный кабинет</p>
+    <h1>Регистрация</h1>
+  </div>
+
+  <form class="form-card auth-form" method="post" autocomplete="on">
+    <label class="field">
+      Имя
+      <input
+        name="name"
+        type="text"
+        autocomplete="name"
+        required
+      >
+    </label>
+
+    <label class="field">
+      Электронная почта
+      <input
+        name="email"
+        type="email"
+        autocomplete="email"
+        required
+      >
+    </label>
+
+    <label class="field">
+      Пароль
+      <input
+        name="password"
+        type="password"
+        autocomplete="new-password"
+        minlength="8"
+        required
+      >
+    </label>
+
+    <button type="submit" class="button primary">
+      Создать аккаунт
+    </button>
+
+    <p class="hint">
+      Уже есть аккаунт?
+      <a href="{{ url_for('ui.login') }}">Войти</a>
+    </p>
+  </form>
+</section>
+{% endblock %}

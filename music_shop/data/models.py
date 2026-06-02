@@ -1,10 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, ForeignKey, Numeric, String, Text
+from sqlalchemy import Boolean, ForeignKey, Numeric, String, Text, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import db
+from .enums import OrderStatus
 
 
 class AppSetting(db.Model):
@@ -83,15 +84,6 @@ class Product(db.Model):
     order_items: Mapped[list["OrderItem"]] = relationship(back_populates="product")
 
 
-class OrderStatus(db.Model):
-    __tablename__ = "order_statuses"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(40), unique=True, nullable=False)
-
-    orders: Mapped[list["Order"]] = relationship(back_populates="status")
-
-
 class Order(db.Model):
     __tablename__ = "orders"
 
@@ -99,13 +91,12 @@ class Order(db.Model):
     order_number: Mapped[str] = mapped_column(String(40), unique=True, nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id", ondelete="RESTRICT"), nullable=False)
-    status_id: Mapped[int] = mapped_column(ForeignKey("order_statuses.id", ondelete="RESTRICT"), nullable=False)
+    status: Mapped[OrderStatus] = mapped_column(Enum(OrderStatus), nullable=False)
     shipping: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     user: Mapped["User"] = relationship(back_populates="orders")
     address: Mapped["Address"] = relationship(back_populates="orders")
-    status: Mapped["OrderStatus"] = relationship(back_populates="orders")
     items: Mapped[list["OrderItem"]] = relationship(back_populates="order", cascade="all, delete-orphan")
 
     @property

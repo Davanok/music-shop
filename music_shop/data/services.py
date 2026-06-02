@@ -10,8 +10,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from .database import db
+from .enums import OrderStatus
 from .models import Order, OrderItem, Product
-from .repositories import get_product, get_setting, get_user, get_user_by_email, list_products_by_ids
+from music_shop.data import repositories as repo
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 DEFAULT_IMAGE = "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=900&q=80"
@@ -55,7 +56,7 @@ def cart_count():
 
 
 def add_to_cart(product_id, quantity=1):
-    product = get_product(product_id)
+    product = repo.get_product(product_id)
     if not product or product.stock < 1:
         return False
     cart = get_cart()
@@ -68,7 +69,7 @@ def add_to_cart(product_id, quantity=1):
 def update_cart(quantities):
     cart = {}
     for product_id, quantity in quantities.items():
-        product = get_product(int(product_id))
+        product = repo.get_product(int(product_id))
         safe_quantity = max(int(quantity), 0)
         if product and safe_quantity > 0:
             cart[str(product_id)] = min(safe_quantity, product.stock)
@@ -76,7 +77,7 @@ def update_cart(quantities):
 
 
 def set_cart_quantity(product_id, quantity):
-    product = get_product(int(product_id))
+    product = repo.get_product(int(product_id))
     cart = get_cart()
     safe_quantity = max(int(quantity), 0)
     if not product or safe_quantity == 0:
@@ -99,7 +100,7 @@ def clear_cart():
 def cart_items():
     cart = session.get("cart", {})
     product_ids = [int(product_id) for product_id in cart.keys()]
-    products = list_products_by_ids(product_ids)
+    products = repo.list_products_by_ids(product_ids)
     items = []
     for product in products:
         quantity = int(cart.get(str(product.id), 0))
@@ -109,7 +110,7 @@ def cart_items():
 
 
 def delivery_price():
-    return Decimal(get_setting("delivery_price", str(DEFAULT_DELIVERY_PRICE)))
+    return Decimal(repo.get_setting("delivery_price", str(DEFAULT_DELIVERY_PRICE)))
 
 
 def cart_totals(items=None):
@@ -126,7 +127,7 @@ def place_order(name, email, address_data, items=None):
     if not items:
         raise ValueError("Корзина пуста")
 
-    user = get_user_by_email(email)
+    user = repo.get_user_by_email(email)
     if not user:
         raise ValueError("Пользователь не найден")
 
@@ -135,7 +136,7 @@ def place_order(name, email, address_data, items=None):
 
     try:
         # адрес
-        address = create_address(
+        address = repo.create_address(
             user_id=user.id,
             country=address_data["country"],
             city=address_data["city"],
@@ -143,17 +144,12 @@ def place_order(name, email, address_data, items=None):
             postal_code=address_data["postal_code"],
         )
 
-        # статус заказа
-        status = get_order_status("Оформлен")
-        if not status:
-            raise ValueError("Статус заказа не найден")
-
         # заказ
         order = Order(
             order_number=f"ORD-{uuid.uuid4().hex[:10].upper()}",
             user_id=user.id,
             address_id=address.id,
-            status_id=status.id,
+            status=OrderStatus.CREATED,
             shipping=Decimal(str(cart_totals(items)["shipping"])),
         )
 
@@ -248,7 +244,7 @@ def hash_password(password):
 
 
 def authenticate_user(email, password):
-    user = get_user_by_email(email.strip().lower())
+    user = repo.get_user_by_email(email.strip().lower())
     if user and check_password_hash(user.password_hash, password):
         return user
     return None
@@ -264,7 +260,7 @@ def logout_user():
 
 def current_user():
     user_id = session.get("user_id")
-    return get_user(user_id) if user_id else None
+    return repo.get_user(user_id) if user_id else None
 
 
 def admin_required(view):
