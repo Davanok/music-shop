@@ -11,7 +11,6 @@ def get_order_by_number(order_number: str):
         .options(
             joinedload(Order.user),
             joinedload(Order.address),
-            joinedload(Order.status),
             joinedload(Order.items),
         )
         .where(Order.order_number == order_number)
@@ -32,8 +31,7 @@ def list_orders():
     return db.session.scalars(
         select(Order)
         .options(
-            joinedload(Order.user),
-            joinedload(Order.status),
+            joinedload(Order.user)
         )
         .order_by(Order.created_at.desc())
     ).unique().all()
