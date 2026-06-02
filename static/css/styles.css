@@ -755,3 +755,19 @@ input, select, textarea {
     color: var(--muted);
     font-size: .85rem;
 }
+
+
+.category-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.category-thumb {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}

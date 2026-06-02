@@ -1,0 +1,7 @@
+{% for product in products %}
+    {% include "partials/product_card.html" %}
+{% else %}
+    <p class="empty-state">
+        По выбранным фильтрам товары не найдены.
+    </p>
+{% endfor %}

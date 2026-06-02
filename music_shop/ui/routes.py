@@ -24,14 +24,16 @@ from music_shop.data.services import (
 
 ui = Blueprint("ui", __name__)
 
-
-@ui.route("/")
-def home():
-    filters = {
+def get_filters():
+    return {
         "q": request.args.get("q", "").strip(),
         "category": request.args.get("category", "all"),
         "stock": request.args.get("stock", "all"),
     }
+
+@ui.route("/")
+def home():
+    filters = get_filters()
     return render_template(
         "home.html",
         categories=repo.list_categories(),
@@ -300,3 +302,18 @@ def admin_update_user_role(user_id):
     else:
         flash("Роль пользователя обновлена.", "success")
     return redirect(url_for("ui.admin_dashboard"))
+
+@ui.route("/catalog")
+def catalog():
+    filters = get_filters()
+
+    products = repo.list_products(
+        search=filters["q"],
+        category_slug=filters["category"],
+        stock=filters["stock"],
+    )
+
+    return render_template(
+        "partials/product_grid.html",
+        products=products,
+    )
