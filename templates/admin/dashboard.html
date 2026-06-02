@@ -1,17 +1,86 @@
 {% extends "base.html" %}
-{% block title %}Администрирование · Музыкальный магазин{% endblock %}
+
+{% block title %}
+    Администрирование · Музыкальный магазин
+{% endblock %}
+
 {% block content %}
 <section class="section page-section">
-  <div class="section-heading"><p class="eyebrow">Панель администратора</p><h1>Управление магазином</h1></div>
-  <div class="admin-metrics"><article><span>Товары</span><strong>{{ products|length }}</strong></article><article><span>Категории</span><strong>{{ categories|length }}</strong></article><article><span>Заказы</span><strong>{{ orders|length }}</strong></article><article><span>Выручка</span><strong>{{ revenue|currency }}</strong></article></div>
-  <div class="admin-actions"><a class="button primary" href="{{ url_for('ui.admin_product_form') }}">Добавить товар</a></div>
-  <div class="admin-layout">
-    <div class="admin-panel"><div class="panel-header"><h2>Товары</h2><span>{{ products|length }} всего</span></div>{% for product in products %}<article class="admin-product"><img src="{{ product.image_url }}" alt="{{ product.name }}"><div><h3>{{ product.name }}</h3><p>{{ product.category.name }} · {{ product.price|currency }} · {{ product.stock }} в наличии</p></div><a class="button ghost" href="{{ url_for('ui.admin_product_form', product_id=product.id) }}">Изменить</a><form method="post" action="{{ url_for('ui.admin_delete_product', product_id=product.id) }}"><button class="danger">Удалить</button></form></article>{% endfor %}</div>
-    <div class="admin-panel"><div class="panel-header"><h2>Заказы</h2><span>{{ orders|length }} оформлено</span></div>{% for order in orders %}<article class="compact-order"><div><h3>{{ order.order_number }}</h3><p>{{ order.customer.name }} · {{ order.customer.email }} · {{ order.status }}</p></div><strong>{{ order.total|currency }}</strong></article>{% else %}<p>Заказов пока нет.</p>{% endfor %}</div>
-  </div>
-  <div class="admin-layout bottom-layout">
-    <div class="admin-panel"><div class="panel-header"><h2>Категории</h2><span>Добавление и удаление</span></div><form class="category-manager" method="post" action="{{ url_for('ui.admin_add_category') }}"><input name="name" placeholder="Название категории" required><input name="description" placeholder="Описание"><input name="image_url" placeholder="Ссылка на изображение"><button>Добавить</button></form>{% for category in categories %}<div class="category-row"><p><strong>{{ category.name }}</strong> — {{ category.description }}</p><form method="post" action="{{ url_for('ui.admin_delete_category', category_id=category.id) }}"><button class="danger">Удалить</button></form></div>{% endfor %}</div>
-    <div class="admin-panel"><div class="panel-header"><h2>Администраторы и роли</h2><span>{{ users|length }} пользователей</span></div><form class="user-manager" method="post" action="{{ url_for('ui.admin_create_user') }}"><input name="name" placeholder="Имя" required><input name="email" type="email" placeholder="Электронная почта" required><input name="password" type="password" placeholder="Пароль" minlength="8" required><select name="role">{% for role, label in role_labels.items() %}<option value="{{ role }}">{{ label }}</option>{% endfor %}</select><button>Создать учетную запись</button></form>{% for user in users %}<div class="category-row"><p><strong>{{ user.name }}</strong><br>{{ user.email }} · {{ role_labels.get(user.role, user.role) }}</p><form method="post" action="{{ url_for('ui.admin_update_user_role', user_id=user.id) }}"><select name="role">{% for role, label in role_labels.items() %}<option value="{{ role }}" {% if user.role == role %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="button ghost">Сохранить роль</button></form></div>{% endfor %}</div>
-  </div>
+
+    <header class="page-header">
+        <nav
+            class="breadcrumbs"
+            aria-label="Breadcrumb"
+        >
+            <ol>
+                <li>Администрирование</li>
+                <li>Панель управления</li>
+            </ol>
+        </nav>
+
+        <div class="section-heading">
+            <p class="eyebrow">
+                Панель администратора
+            </p>
+
+            <h1>
+                Управление магазином
+            </h1>
+
+            <p class="page-description">
+                Управление товарами, заказами, категориями и пользователями.
+            </p>
+        </div>
+    </header>
+
+    <section class="metrics-grid">
+        {% include "admin/partials/_metric_card.html" with context %}
+    </section>
+
+    <div class="admin-actions">
+        <a
+            class="button primary"
+            href="{{ url_for('ui.admin_product_form') }}"
+        >
+            Добавить товар
+        </a>
+    </div>
+
+    <div class="admin-layout">
+
+        <section class="admin-panel">
+            <header class="panel-header">
+                <h2>Товары</h2>
+                <span>{{ products|length }} всего</span>
+            </header>
+
+            {% if products %}
+                {% for product in products %}
+                    {% include "admin/partials/_product_card.html" %}
+                {% endfor %}
+            {% else %}
+                {% set message = "Товаров пока нет." %}
+                {% include "admin/partials/_empty_state.html" %}
+            {% endif %}
+        </section>
+
+        <section class="admin-panel">
+            <header class="panel-header">
+                <h2>Заказы</h2>
+                <span>{{ orders|length }} оформлено</span>
+            </header>
+
+            {% if orders %}
+                {% for order in orders %}
+                    {% include "admin/partials/_order_card.html" %}
+                {% endfor %}
+            {% else %}
+                {% set message = "Заказов пока нет." %}
+                {% include "admin/partials/_empty_state.html" %}
+            {% endif %}
+        </section>
+
+    </div>
+
 </section>
 {% endblock %}

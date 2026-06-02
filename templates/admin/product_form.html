@@ -1,34 +1,245 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Изменить' if product else 'Добавить' }} товар · Музыкальный магазин{% endblock %}
+
+{% block title %}
+    {{ 'Изменить' if product else 'Добавить' }} товар
+{% endblock %}
+
 {% block content %}
 <section class="section page-section narrow">
-    <div class="section-heading"><p class="eyebrow">Администрирование</p>
-        <h1>{{ 'Изменить' if product else 'Добавить' }} товар</h1></div>
-    <form class="form-card" method="post" enctype="multipart/form-data"><label class="field">Название товара<input
-            name="name" value="{{ product.name if product else '' }}" required></label><label class="field">Адрес товара<input
-            name="slug" value="{{ product.slug if product else '' }}"
-            placeholder="Если пусто, создается из названия"></label><label class="field">Категория<select
-            name="category_id">{% for category in categories %}
-        <option value="{{ category.id }}" {% if product and product.category_id== category.id %}selected{% endif %}>{{
-            category.name }}
-        </option>
-        {% endfor %}</select></label>
-        <div class="form-row"><label class="field">Цена<input name="price" type="number" min="0" step="0.01"
-                                                              value="{{ product.price if product else '0.00' }}"
-                                                              required></label><label class="field">Остаток<input
-                name="stock" type="number" min="0" value="{{ product.stock if product else '0' }}" required></label>
+
+    <header class="page-header">
+
+        <nav
+            class="breadcrumbs"
+            aria-label="Breadcrumb"
+        >
+            <ol>
+                <li>
+                    <a href="{{ url_for('ui.admin_dashboard') }}">
+                        Администрирование
+                    </a>
+                </li>
+                <li>Товары</li>
+                <li>
+                    {{ 'Редактирование' if product else 'Создание' }}
+                </li>
+            </ol>
+        </nav>
+
+        <div class="section-heading">
+            <p class="eyebrow">
+                Администрирование
+            </p>
+
+            <h1>
+                {{ 'Изменить' if product else 'Добавить' }} товар
+            </h1>
+
+            <p class="page-description">
+                Заполните информацию о товаре и сохраните изменения.
+            </p>
         </div>
-        <label class="field checkbox-field"><input name="featured" type="checkbox" {% if product and product.featured
-                                                   %}checked{% endif %}> Избранный товар</label><label class="field">Описание<textarea
-                name="description" rows="5"
-                required>{{ product.description if product else '' }}</textarea></label><label class="field">Ссылка на
-            изображение<input name="image_url" value="{{ product.image_url if product else '' }}"></label><label
-                class="field upload-field">Загрузить изображение товара<input name="image_file" type="file"
-                                                                              accept="image/*"></label>{% if product
-        %}<img class="upload-preview" src="{{ product.image_url }}" alt="Предпросмотр {{ product.name }}">{% endif %}
-        <div class="hero-actions">
-            <button class="button primary">Сохранить товар</button>
-            <a class="button ghost" href="{{ url_for('ui.admin_dashboard') }}">Отмена</a></div>
+
+    </header>
+
+    <form
+        class="form-card product-form"
+        method="post"
+        enctype="multipart/form-data"
+        id="product-form"
+    >
+
+        <section class="form-section">
+
+            <h2>Основная информация</h2>
+
+            <label
+                class="field"
+                for="name"
+            >
+                Название товара
+            </label>
+
+            <input
+                id="name"
+                name="name"
+                value="{{ product.name if product else '' }}"
+                required
+            >
+
+            <label
+                class="field"
+                for="slug"
+            >
+                Адрес товара
+            </label>
+
+            <input
+                id="slug"
+                name="slug"
+                value="{{ product.slug if product else '' }}"
+                aria-describedby="slug-help"
+            >
+
+            <p
+                id="slug-help"
+                class="field-help"
+            >
+                Если оставить пустым — будет создан автоматически.
+            </p>
+
+            <label
+                class="field"
+                for="category_id"
+            >
+                Категория
+            </label>
+
+            <select
+                id="category_id"
+                name="category_id"
+            >
+                {% for category in categories %}
+                    <option
+                        value="{{ category.id }}"
+                        {% if product and product.category_id == category.id %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+        </section>
+
+        <section class="form-section">
+
+            <h2>Цена и остатки</h2>
+
+            <div class="form-row">
+
+                <div class="field">
+                    <label for="price">Цена</label>
+
+                    <input
+                        id="price"
+                        name="price"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                        value="{{ product.price if product else '0.00' }}"
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="stock">Остаток</label>
+
+                    <input
+                        id="stock"
+                        name="stock"
+                        type="number"
+                        min="0"
+                        step="1"
+                        required
+                        value="{{ product.stock if product else '0' }}"
+                    >
+                </div>
+
+            </div>
+
+            <label class="checkbox-field">
+                <input
+                    type="checkbox"
+                    name="featured"
+                    {% if product and product.featured %}
+                        checked
+                    {% endif %}
+                >
+                Избранный товар
+            </label>
+
+        </section>
+
+        <section class="form-section">
+
+            <h2>Описание</h2>
+
+            <textarea
+                name="description"
+                rows="6"
+                required
+            >{{ product.description if product else '' }}</textarea>
+
+        </section>
+
+        <section class="form-section image-section">
+
+            <div class="image-fields">
+
+                <h2>Изображение</h2>
+
+                <label class="field">
+                    URL изображения
+
+                    <input
+                        id="image-url"
+                        name="image_url"
+                        value="{{ product.image_url if product else '' }}"
+                    >
+                </label>
+
+                <label class="field">
+                    Загрузить изображение
+
+                    <input
+                        id="image-file"
+                        name="image_file"
+                        type="file"
+                        accept="image/*"
+                    >
+                </label>
+
+            </div>
+
+            <aside class="image-preview-panel">
+
+                <h3>Предпросмотр</h3>
+
+                <img
+                    id="image-preview"
+                    class="upload-preview"
+                    src="{{ product.image_url if product else '' }}"
+                    alt="Предпросмотр товара"
+                >
+
+            </aside>
+
+        </section>
+
+        <footer class="form-actions">
+
+            <button
+                id="save-btn"
+                type="submit"
+                class="button primary"
+            >
+                Сохранить товар
+            </button>
+
+            <a
+                href="{{ url_for('ui.admin_dashboard') }}"
+                class="button secondary"
+            >
+                Отмена
+            </a>
+
+        </footer>
+
     </form>
+
 </section>
+
+<script src="{{ url_for('static', filename='js/product_form.js') }}" defer></script>
 {% endblock %}

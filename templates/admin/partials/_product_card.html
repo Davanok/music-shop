@@ -1,0 +1,41 @@
+<article class="admin-product-card">
+    <div class="product-image">
+        <img
+            src="{{ product.image_url }}"
+            alt="{{ product.name }}"
+            loading="lazy"
+        >
+    </div>
+
+    <div class="product-content">
+        <h3>{{ product.name }}</h3>
+
+        <ul class="product-meta">
+            <li>{{ product.category.name }}</li>
+            <li>{{ product.price|currency }}</li>
+            <li>{{ product.stock }} в наличии</li>
+        </ul>
+    </div>
+
+    <div class="product-actions">
+        <a
+            class="button ghost"
+            href="{{ url_for('ui.admin_product_form', product_id=product.id) }}"
+        >
+            Изменить
+        </a>
+
+        <form
+            method="post"
+            action="{{ url_for('ui.admin_delete_product', product_id=product.id) }}"
+            onsubmit="return confirm('Удалить товар?');"
+        >
+            <button
+                type="submit"
+                class="button danger"
+            >
+                Удалить
+            </button>
+        </form>
+    </div>
+</article>

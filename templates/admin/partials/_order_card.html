@@ -1,0 +1,36 @@
+<article class="admin-order-card">
+
+    <div class="order-main">
+
+        <div class="order-details">
+            <h3 class="order-number">
+                {{ order.order_number }}
+            </h3>
+
+            <p class="order-customer">
+                <strong>{{ order.customer.name }}</strong>
+            </p>
+
+            <p class="order-email">
+                {{ order.customer.email }}
+            </p>
+        </div>
+
+        <div class="order-summary">
+
+            <span
+                class="status-badge status-{{ order.status|lower }}"
+                aria-label="Статус заказа"
+            >
+                {{ order.status }}
+            </span>
+
+            <strong class="order-total">
+                {{ order.total|currency }}
+            </strong>
+
+        </div>
+
+    </div>
+
+</article>
