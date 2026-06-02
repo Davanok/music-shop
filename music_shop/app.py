@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from flask import Flask
 
@@ -18,7 +18,6 @@ def create_app(config_object=Config):
     app.register_blueprint(ui)
     app.register_blueprint(api)
 
-
     @app.cli.command("init-db")
     def init_db():
         """Create SQLAlchemy tables and load seed data."""
@@ -32,6 +31,10 @@ def create_app(config_object=Config):
 
     @app.template_filter("currency")
     def currency(value):
-        return f"{Decimal(value):,.2f} ₽"
+        try:
+            amount = Decimal(value or "0")
+        except (InvalidOperation, TypeError, ValueError):
+            amount = Decimal("0")
+        return f"{amount:,.2f} ₽"
 
     return app

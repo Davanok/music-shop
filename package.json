@@ -1,9 +1,0 @@
-{
-  "name": "music-shop",
-  "version": "0.1.0",
-  "private": true,
-  "description": "Responsive music shop storefront with catalog, cart, checkout, account, admin, and image-upload support.",
-  "scripts": {
-    "check": "node --check app.js"
-  }
-}

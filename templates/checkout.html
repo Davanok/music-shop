@@ -1,5 +1,44 @@
 {% extends "base.html" %}
 {% block title %}Оформление заказа · Музыкальный магазин{% endblock %}
 {% block content %}
-<section class="section page-section"><div class="section-heading"><p class="eyebrow">Оформление заказа</p><h1>Данные для доставки</h1></div><div class="checkout-layout"><form method="post" class="form-card"><label class="field">Полное имя<input name="name" autocomplete="name" required></label><label class="field">Электронная почта<input name="email" type="email" autocomplete="email" required></label><label class="field">Адрес доставки<textarea name="address" rows="4" required></textarea></label><button class="button primary">Разместить заказ</button></form><aside class="summary-card"><h2>Состав заказа</h2>{% for item in items %}<p><span>{{ item.product.name }} × {{ item.quantity }}</span><strong>{{ item.line_total|currency }}</strong></p>{% endfor %}<p><span>Товары</span><strong>{{ totals.subtotal|currency }}</strong></p><p><span>Доставка</span><strong>{{ totals.shipping|currency }}</strong></p><p class="summary-total"><span>Итого</span><strong>{{ totals.total|currency }}</strong></p></aside></div></section>
+<section class="section page-section">
+  <div class="section-heading">
+    <p class="eyebrow">Оформление заказа</p>
+    <h1>Данные для доставки</h1>
+  </div>
+  <div class="checkout-layout">
+    <form method="post" class="form-card">
+      <label class="field">Полное имя
+        <input name="name" autocomplete="name" value="{{ user.name }}" disabled>
+      </label>
+      <label class="field">Электронная почта
+        <input name="email" type="email" autocomplete="email" value="{{ user.email }}" disabled>
+      </label>
+      <div class="form-row">
+        <label class="field">Страна
+          <input name="country" autocomplete="country-name" required>
+        </label>
+        <label class="field">Город
+          <input name="city" autocomplete="address-level2" required>
+        </label>
+      </div>
+      <label class="field">Улица и дом
+        <input name="street" autocomplete="street-address" required>
+      </label>
+      <label class="field">Почтовый индекс
+        <input name="postal_code" autocomplete="postal-code" required>
+      </label>
+      <button class="button primary">Разместить заказ</button>
+    </form>
+    <aside class="summary-card">
+      <h2>Состав заказа</h2>
+      {% for item in items %}
+        <p><span>{{ item.product.name }} × {{ item.quantity }}</span><strong>{{ item.line_total|currency }}</strong></p>
+      {% endfor %}
+      <p><span>Товары</span><strong>{{ totals.subtotal|currency }}</strong></p>
+      <p><span>Доставка</span><strong>{{ totals.shipping|currency }}</strong></p>
+      <p class="summary-total"><span>Итого</span><strong>{{ totals.total|currency }}</strong></p>
+    </aside>
+  </div>
+</section>
 {% endblock %}

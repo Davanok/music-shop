@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 
 from .database import db
 from .enums import OrderStatus
-from .models import Order, OrderItem, Product
+from .models import Address, Order, OrderItem, Product
 from music_shop.data import repositories as repo
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
@@ -59,9 +59,15 @@ def add_to_cart(product_id, quantity=1):
     product = repo.get_product(product_id)
     if not product or product.stock < 1:
         return False
+
+    try:
+        requested_quantity = max(int(quantity), 1)
+    except (TypeError, ValueError):
+        requested_quantity = 1
+
     cart = get_cart()
     current = int(cart.get(str(product_id), 0))
-    cart[str(product_id)] = min(current + max(int(quantity), 1), product.stock)
+    cart[str(product_id)] = min(current + requested_quantity, product.stock)
     session.modified = True
     return True
 
@@ -69,21 +75,31 @@ def add_to_cart(product_id, quantity=1):
 def update_cart(quantities):
     cart = {}
     for product_id, quantity in quantities.items():
-        product = repo.get_product(int(product_id))
-        safe_quantity = max(int(quantity), 0)
+        try:
+            parsed_product_id = int(product_id)
+            safe_quantity = max(int(quantity), 0)
+        except (TypeError, ValueError):
+            continue
+
+        product = repo.get_product(parsed_product_id)
         if product and safe_quantity > 0:
-            cart[str(product_id)] = min(safe_quantity, product.stock)
+            cart[str(parsed_product_id)] = min(safe_quantity, product.stock)
     session["cart"] = cart
 
 
 def set_cart_quantity(product_id, quantity):
-    product = repo.get_product(int(product_id))
+    try:
+        parsed_product_id = int(product_id)
+        safe_quantity = max(int(quantity), 0)
+    except (TypeError, ValueError):
+        return
+
+    product = repo.get_product(parsed_product_id)
     cart = get_cart()
-    safe_quantity = max(int(quantity), 0)
     if not product or safe_quantity == 0:
-        cart.pop(str(product_id), None)
+        cart.pop(str(parsed_product_id), None)
     else:
-        cart[str(product_id)] = min(safe_quantity, product.stock)
+        cart[str(parsed_product_id)] = min(safe_quantity, product.stock)
     session.modified = True
 
 
@@ -99,13 +115,28 @@ def clear_cart():
 
 def cart_items():
     cart = session.get("cart", {})
-    product_ids = [int(product_id) for product_id in cart.keys()]
+    product_ids = []
+    for product_id in cart.keys():
+        try:
+            product_ids.append(int(product_id))
+        except (TypeError, ValueError):
+            continue
+
     products = repo.list_products_by_ids(product_ids)
     items = []
     for product in products:
-        quantity = int(cart.get(str(product.id), 0))
+        try:
+            quantity = int(cart.get(str(product.id), 0))
+        except (TypeError, ValueError):
+            continue
         if quantity > 0:
-            items.append({"product": product, "quantity": quantity, "line_total": product.price * quantity})
+            items.append(
+                {
+                    "product": product,
+                    "quantity": quantity,
+                    "line_total": product.price * quantity,
+                }
+            )
     return items
 
 
@@ -121,6 +152,17 @@ def cart_totals(items=None):
 
 
 
+def validate_address_data(address_data):
+    required_fields = ("country", "city", "street", "postal_code")
+    if not isinstance(address_data, dict):
+        raise ValueError("Некорректный формат адреса")
+
+    cleaned = {field: str(address_data.get(field, "")).strip() for field in required_fields}
+    if any(not value for value in cleaned.values()):
+        raise ValueError("Заполните все поля адреса доставки")
+    return cleaned
+
+
 def place_order(name, email, address_data, items=None):
     items = cart_items() if items is None else items
 
@@ -131,20 +173,13 @@ def place_order(name, email, address_data, items=None):
     if not user:
         raise ValueError("Пользователь не найден")
 
-    if isinstance(address_data, str):
-        raise ValueError("Некорректный формат адреса")
+    address_data = validate_address_data(address_data)
 
     try:
-        # адрес
-        address = repo.create_address(
-            user_id=user.id,
-            country=address_data["country"],
-            city=address_data["city"],
-            street=address_data["street"],
-            postal_code=address_data["postal_code"],
-        )
+        address = Address(user_id=user.id, **address_data)
+        db.session.add(address)
+        db.session.flush()
 
-        # заказ
         order = Order(
             order_number=f"ORD-{uuid.uuid4().hex[:10].upper()}",
             user_id=user.id,
@@ -156,7 +191,6 @@ def place_order(name, email, address_data, items=None):
         db.session.add(order)
         db.session.flush()
 
-        # позиции заказа
         for item in items:
             product = db.session.get(
                 Product,

@@ -67,18 +67,12 @@ CREATE TABLE products (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
-CREATE TABLE order_statuses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(40) NOT NULL UNIQUE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
 CREATE TABLE orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_number VARCHAR(40) NOT NULL UNIQUE,
     user_id INT NOT NULL,
     address_id INT NOT NULL,
-    status_id INT NOT NULL,
+    status VARCHAR(20) NOT NULL,
     shipping DECIMAL(10,2) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -90,11 +84,6 @@ CREATE TABLE orders (
     CONSTRAINT fk_orders_address
         FOREIGN KEY (address_id)
         REFERENCES addresses(id)
-        ON DELETE RESTRICT,
-
-    CONSTRAINT fk_orders_status
-        FOREIGN KEY (status_id)
-        REFERENCES order_statuses(id)
         ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -124,11 +113,14 @@ CREATE INDEX idx_addresses_user_id
 CREATE INDEX idx_products_category_id
     ON products(category_id);
 
+CREATE INDEX idx_products_featured
+    ON products(featured);
+
 CREATE INDEX idx_orders_user_id
     ON orders(user_id);
 
-CREATE INDEX idx_orders_status_id
-    ON orders(status_id);
+CREATE INDEX idx_orders_status
+    ON orders(status);
 
 CREATE INDEX idx_orders_address_id
     ON orders(address_id);
