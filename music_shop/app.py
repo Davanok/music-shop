@@ -2,9 +2,9 @@ from decimal import Decimal
 
 from flask import Flask
 
+from .extensions import db
 from .api.routes import api
 from .config import Config
-from .data.database import db
 from .data.services import cart_count, cart_totals, current_user
 from .data.seeds import seed_data
 from .ui.routes import ui
