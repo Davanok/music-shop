@@ -5,7 +5,7 @@
   <div class="section-heading"><p class="eyebrow">Мой аккаунт</p><h1>История заказов</h1></div>
   <div class="orders-list">
     {% for order in orders %}
-      <article class="order-card"><div><p class="category-label">{{ order.status }}</p><h2>{{ order.order_number }}</h2><p>{{ order.created_at }}</p><p>{{ order.customer.name }}</p></div><strong>{{ order.total|currency }}</strong></article>
+      <article class="order-card"><div><p class="category-label">{{ order.status }}</p><h2>{{ order.order_number }}</h2><p>{{ order.created_at }}</p><p>{{ order.user.name }}</p></div><strong>{{ order.total|currency }}</strong></article>
     {% else %}
       <p class="empty-state">У вас пока нет заказов.</p>
     {% endfor %}
