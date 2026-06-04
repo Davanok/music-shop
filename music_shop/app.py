@@ -5,7 +5,7 @@ from flask import Flask
 from .extensions import db
 from .api.routes import api
 from .config import Config
-from .data.services import cart_count, cart_totals, current_user
+from .data.services import cart_count, cart_quantities, cart_totals, current_user
 from .data.seeds import seed_data
 from .ui.routes import ui
 
@@ -27,7 +27,12 @@ def create_app(config_object=Config):
 
     @app.context_processor
     def inject_globals():
-        return {"cart_count": cart_count(), "cart_totals": cart_totals, "current_user": current_user()}
+        return {
+            "cart_count": cart_count(),
+            "cart_quantities": cart_quantities(),
+            "cart_totals": cart_totals,
+            "current_user": current_user(),
+        }
 
     @app.template_filter("currency")
     def currency(value):

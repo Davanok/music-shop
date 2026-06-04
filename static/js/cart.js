@@ -41,11 +41,24 @@ function renderCartSummary(cart) {
     <a class="button primary ${disabled}" href="${checkoutHref}">${checkoutText}</a>`;
 }
 
+function updateProductQuantityBadges(cart) {
+  const quantities = new Map(
+    cart.items.map((item) => [String(item.product.id), item.quantity])
+  );
+
+  document.querySelectorAll(".cart-product-quantity").forEach((badge) => {
+    const quantity = quantities.get(String(badge.dataset.productId)) || 0;
+    badge.textContent = quantity;
+    badge.hidden = quantity === 0;
+  });
+}
+
 function applyCart(cart) {
   const count = document.querySelector("#cart-count");
   if (count) count.textContent = cart.count;
   renderCartItems(cart);
   renderCartSummary(cart);
+  updateProductQuantityBadges(cart);
 }
 
 async function requestCart(url, options = {}) {

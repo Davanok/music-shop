@@ -1,114 +1,47 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="hero">
-    <div class="hero-copy">
-        <p class="eyebrow">Весенняя студийная распродажа</p>
-        <h1>Найдите новое звучание с инструментами для каждого музыканта.</h1>
-        <p>Выбирайте гитары, барабаны, клавишные, духовые инструменты, запчасти и аксессуары в магазине.</p>
-        <div class="hero-actions"><a class="button primary" href="#catalog">Перейти в каталог</a><a class="button ghost"
-                                                                                                    href="#categories">Смотреть
-            категории</a></div>
+  <div class="hero-copy">
+    <p class="eyebrow">Весенняя студийная распродажа</p>
+    <h1>Найдите новое звучание с инструментами для каждого музыканта.</h1>
+    <p>Выбирайте гитары, барабаны, клавишные, духовые инструменты, запчасти и аксессуары в магазине.</p>
+    <div class="hero-actions">
+      <a class="button primary" href="{{ url_for('ui.catalog') }}">Перейти в каталог</a>
+      <a class="button ghost" href="#categories">Смотреть категории</a>
     </div>
-    <aside class="promo-card"><span>Комплект со скидкой</span><strong>Скидка 15% на аксессуары с любым избранным
-        инструментом.</strong>
-        <p>Используйте промокод STAGE15 при оформлении заказа.</p></aside>
+  </div>
+  <aside class="promo-card">
+    <span>Комплект со скидкой</span>
+    <strong>Скидка 15% на аксессуары с любым избранным инструментом.</strong>
+    <p>Используйте промокод STAGE15 при оформлении заказа.</p>
+  </aside>
 </section>
+
 <section class="section">
-    <div class="section-heading"><p class="eyebrow">Выбор редакции</p>
-        <h2>Избранные товары</h2></div>
-    <div class="product-grid">{% for product in featured %}{% include "partials/product_card.html" %}{% endfor %}</div>
+  <div class="section-heading">
+    <p class="eyebrow">Выбор редакции</p>
+    <h2>Избранные товары</h2>
+  </div>
+  <div class="product-grid">
+    {% for product in featured %}
+      {% include "partials/product_card.html" %}
+    {% endfor %}
+  </div>
 </section>
+
 <section id="categories" class="section">
-    <div class="section-heading"><p class="eyebrow">Покупайте по направлению</p>
-        <h2>Категории</h2></div>
-    <div class="category-grid">{% for category in categories %}<a class="category-card"
-                                                                  href="{{ url_for('ui.home', category=category.slug) }}#catalog"><img
-            src="{{ category.image_url }}" alt="{{ category.name }}"><span>{{ category.name }}</span>
-        <p>{{ category.description }}</p></a>{% endfor %}
-    </div>
+  <div class="section-heading">
+    <p class="eyebrow">Покупайте по направлению</p>
+    <h2>Категории</h2>
+  </div>
+  <div class="category-grid">
+    {% for category in categories %}
+      <a class="category-card" href="{{ url_for('ui.catalog', category=category.slug) }}">
+        <img src="{{ category.image_url }}" alt="{{ category.name }}">
+        <span>{{ category.name }}</span>
+        <p>{{ category.description }}</p>
+      </a>
+    {% endfor %}
+  </div>
 </section>
-<section id="catalog" class="section">
-    <div class="section-heading catalog-heading">
-        <div><p class="eyebrow">Каталог</p>
-            <h2>Все музыкальные товары</h2></div>
-            <form id="catalog-filters" class="filters">
-                <input
-                    name="q"
-                    type="search"
-                    placeholder="Поиск инструментов и аксессуаров"
-                    value="{{ filters.q }}"
-                >
-
-                <select name="category">
-                    <option value="all">Все категории</option>
-
-                    {% for category in categories %}
-                    <option
-                        value="{{ category.slug }}"
-                        {% if filters.category == category.slug %}selected{% endif %}
-                    >
-                        {{ category.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-
-                <select name="stock">
-                    <option value="all">Любое наличие</option>
-
-                    <option
-                        value="in-stock"
-                        {% if filters.stock == 'in-stock' %}selected{% endif %}
-                    >
-                        В наличии
-                    </option>
-
-                    <option
-                        value="out-of-stock"
-                        {% if filters.stock == 'out-of-stock' %}selected{% endif %}
-                    >
-                        Нет в наличии
-                    </option>
-                </select>
-            </form>
-    </div>
-    <div id="catalog-products" class="product-grid">
-        {% include "partials/product_grid.html" %}
-    </div>
-</section>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("catalog-filters");
-
-    if (!form) return;
-
-    const products = document.getElementById("catalog-products");
-
-    let timeout;
-
-    async function loadProducts() {
-        const params = new URLSearchParams(
-            new FormData(form)
-        );
-
-        const response = await fetch(
-            `/catalog?${params.toString()}`
-        );
-
-        products.innerHTML = await response.text();
-
-        history.replaceState(
-            {},
-            "",
-            `/?${params.toString()}#catalog`
-        );
-    }
-
-    form.addEventListener("input", () => {
-        clearTimeout(timeout);
-        timeout = setTimeout(loadProducts, 300);
-    });
-
-    form.addEventListener("change", loadProducts);
-});
-</script>
 {% endblock %}

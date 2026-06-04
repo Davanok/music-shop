@@ -120,3 +120,44 @@ def test_place_order_creates_address_and_reduces_stock(app):
     assert order.address.city == "Москва"
     assert order.total == product.price * 2 + order.shipping
     assert db.session.get(Product, product.id).stock == 1
+
+
+def test_catalog_page_shows_product_quantity_in_cart(client):
+    product = create_product()
+    with client.session_transaction() as session:
+        session["cart"] = {str(product.id): 2}
+
+    response = client.get("/catalog")
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Все музыкальные товары" in html
+    assert "cart-product-quantity" in html
+    assert ">\n            2\n          </span>" in html
+
+
+def test_checkout_allows_admin_user(client):
+    product = create_product()
+    admin = create_user("admin@example.com", "admin")
+    with client.session_transaction() as session:
+        session["user_id"] = admin.id
+        session["cart"] = {str(product.id): 1}
+
+    response = client.get("/checkout")
+
+    assert response.status_code == 200
+    assert "Разместить заказ" in response.get_data(as_text=True)
+
+
+def test_signup_marks_invalid_fields(client):
+    response = client.post(
+        "/signup",
+        data={"name": "", "email": "bad-email", "password": "123"},
+    )
+
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert "field-error" in html
+    assert "Введите имя." in html
+    assert "Введите корректный адрес электронной почты." in html
+    assert "Пароль должен содержать минимум 8 символов." in html

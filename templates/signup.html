@@ -9,36 +9,47 @@
     <h1>Регистрация</h1>
   </div>
 
-  <form class="form-card auth-form" method="post" autocomplete="on">
-    <label class="field">
+  <form class="form-card auth-form" method="post" autocomplete="on" novalidate>
+    <label class="field {% if errors.name %}field-error{% endif %}">
       Имя
       <input
         name="name"
         type="text"
         autocomplete="name"
+        value="{{ form.name }}"
+        aria-invalid="{{ 'true' if errors.name else 'false' }}"
+        {% if errors.name %}aria-describedby="name-error"{% endif %}
         required
       >
+      {% if errors.name %}<span id="name-error" class="error-message">{{ errors.name }}</span>{% endif %}
     </label>
 
-    <label class="field">
+    <label class="field {% if errors.email %}field-error{% endif %}">
       Электронная почта
       <input
         name="email"
         type="email"
         autocomplete="email"
+        value="{{ form.email }}"
+        aria-invalid="{{ 'true' if errors.email else 'false' }}"
+        {% if errors.email %}aria-describedby="signup-email-error"{% endif %}
         required
       >
+      {% if errors.email %}<span id="signup-email-error" class="error-message">{{ errors.email }}</span>{% endif %}
     </label>
 
-    <label class="field">
+    <label class="field {% if errors.password %}field-error{% endif %}">
       Пароль
       <input
         name="password"
         type="password"
         autocomplete="new-password"
         minlength="8"
+        aria-invalid="{{ 'true' if errors.password else 'false' }}"
+        {% if errors.password %}aria-describedby="signup-password-error"{% endif %}
         required
       >
+      {% if errors.password %}<span id="signup-password-error" class="error-message">{{ errors.password }}</span>{% endif %}
     </label>
 
     <button type="submit" class="button primary">
