@@ -161,3 +161,28 @@ def test_signup_marks_invalid_fields(client):
     assert "Введите имя." in html
     assert "Введите корректный адрес электронной почты." in html
     assert "Пароль должен содержать минимум 8 символов." in html
+
+def test_account_allows_admin_user(client):
+    admin = create_user("admin-account@example.com", "admin")
+    with client.session_transaction() as session:
+        session["user_id"] = admin.id
+
+    response = client.get("/account")
+
+    assert response.status_code == 200
+    assert "У вас пока нет заказов." in response.get_data(as_text=True)
+
+
+def test_admin_dashboard_uses_section_layout(client):
+    product = create_product()
+    admin = create_user("dashboard-admin@example.com", "admin")
+    with client.session_transaction() as session:
+        session["user_id"] = admin.id
+
+    response = client.get(f"/admin?section=products&entry_id={product.id}")
+
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert "admin-workspace" in html
+    assert "Разделы управления" in html
+    assert "Редактировать товар" in html
