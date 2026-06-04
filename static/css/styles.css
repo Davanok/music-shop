@@ -771,3 +771,37 @@ input, select, textarea {
     border-radius: 12px;
     border: 1px solid var(--border);
 }
+.cart-product-quantity {
+    display: inline-grid;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    margin-left: .5rem;
+    place-items: center;
+    color: var(--surface-strong);
+    background: var(--accent);
+    border-radius: 999px;
+    font-size: .82rem;
+    line-height: 1;
+}
+
+.cart-product-quantity[hidden] {
+    display: none;
+}
+
+.order-card h2 {
+    margin-bottom: .35rem;
+    font-size: clamp(1.15rem, 2vw, 1.45rem);
+    line-height: 1.2;
+    letter-spacing: -.02em;
+}
+
+.field-error input {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(206, 45, 79, .14);
+}
+
+.error-message {
+    color: var(--danger);
+    font-size: .9rem;
+    font-weight: 800;
+}

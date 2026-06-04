@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог · Музыкальный магазин{% endblock %}
+
+{% block content %}
+<section id="catalog" class="section page-section catalog-page">
+  <div class="section-heading catalog-heading">
+    <div>
+      <p class="eyebrow">Каталог</p>
+      <h1>Все музыкальные товары</h1>
+    </div>
+
+    <form id="catalog-filters" class="filters">
+      <input
+        name="q"
+        type="search"
+        placeholder="Поиск инструментов и аксессуаров"
+        value="{{ filters.q }}"
+      >
+
+      <select name="category">
+        <option value="all">Все категории</option>
+
+        {% for category in categories %}
+          <option
+            value="{{ category.slug }}"
+            {% if filters.category == category.slug %}selected{% endif %}
+          >
+            {{ category.name }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <select name="stock">
+        <option value="all">Любое наличие</option>
+        <option value="in-stock" {% if filters.stock == 'in-stock' %}selected{% endif %}>
+          В наличии
+        </option>
+        <option value="out-of-stock" {% if filters.stock == 'out-of-stock' %}selected{% endif %}>
+          Нет в наличии
+        </option>
+      </select>
+    </form>
+  </div>
+
+  <div id="catalog-products" class="product-grid">
+    {% include "partials/product_grid.html" %}
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("catalog-filters");
+
+  if (!form) return;
+
+  const products = document.getElementById("catalog-products");
+  let timeout;
+
+  async function loadProducts() {
+    const params = new URLSearchParams(new FormData(form));
+    const response = await fetch(`/catalog/products?${params.toString()}`);
+
+    products.innerHTML = await response.text();
+
+    history.replaceState(
+      {},
+      "",
+      `/catalog?${params.toString()}`
+    );
+  }
+
+  form.addEventListener("input", () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(loadProducts, 300);
+  });
+
+  form.addEventListener("change", loadProducts);
+});
+</script>
+{% endblock %}

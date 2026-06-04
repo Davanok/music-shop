@@ -55,6 +55,16 @@ def cart_count():
     return sum(int(quantity) for quantity in session.get("cart", {}).values())
 
 
+def cart_quantities():
+    quantities = {}
+    for product_id, quantity in get_cart().items():
+        try:
+            quantities[int(product_id)] = int(quantity)
+        except (TypeError, ValueError):
+            continue
+    return quantities
+
+
 def add_to_cart(product_id, quantity=1):
     product = repo.get_product(product_id)
     if not product or product.stock < 1:

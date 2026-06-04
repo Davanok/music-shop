@@ -1,3 +1,5 @@
+import re
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy.exc import IntegrityError
 
@@ -24,6 +26,53 @@ from music_shop.data.services import (
 
 ui = Blueprint("ui", __name__)
 
+EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+
+
+def validate_login_form(form):
+    data = {
+        "email": form.get("email", "").strip().lower(),
+        "password": form.get("password", ""),
+    }
+    errors = {}
+
+    if not data["email"]:
+        errors["email"] = "Введите электронную почту."
+    elif not EMAIL_RE.match(data["email"]):
+        errors["email"] = "Введите корректный адрес электронной почты."
+
+    if not data["password"]:
+        errors["password"] = "Введите пароль."
+
+    return data, errors
+
+
+def validate_signup_form(form):
+    data = {
+        "name": form.get("name", "").strip(),
+        "email": form.get("email", "").strip().lower(),
+        "password": form.get("password", ""),
+    }
+    errors = {}
+
+    if not data["name"]:
+        errors["name"] = "Введите имя."
+    elif len(data["name"]) < 2:
+        errors["name"] = "Имя должно быть не короче 2 символов."
+
+    if not data["email"]:
+        errors["email"] = "Введите электронную почту."
+    elif not EMAIL_RE.match(data["email"]):
+        errors["email"] = "Введите корректный адрес электронной почты."
+
+    if not data["password"]:
+        errors["password"] = "Введите пароль."
+    elif len(data["password"]) < 8:
+        errors["password"] = "Пароль должен содержать минимум 8 символов."
+
+    return data, errors
+
+
 def get_filters():
     return {
         "q": request.args.get("q", "").strip(),
@@ -33,13 +82,10 @@ def get_filters():
 
 @ui.route("/")
 def home():
-    filters = get_filters()
     return render_template(
         "home.html",
         categories=repo.list_categories(),
         featured=repo.list_products(featured_only=True, limit=3),
-        products=repo.list_products(search=filters["q"], category_slug=filters["category"], stock=filters["stock"]),
-        filters=filters,
     )
 
 
@@ -53,45 +99,60 @@ def login():
             else url_for("ui.account")
         )
 
+    form = {"email": ""}
+    errors = {}
+
     if request.method == "POST":
-        user = authenticate_user(
-            request.form["email"].strip().lower(),
-            request.form["password"],
-        )
+        form, errors = validate_login_form(request.form)
 
-        if user:
-            login_user(user)
-
-            flash("Вы вошли в систему.", "success")
-
-            return redirect(
-                url_for("ui.admin_dashboard")
-                if user.is_admin
-                else url_for("ui.home")
+        if not errors:
+            user = authenticate_user(
+                form["email"],
+                form["password"],
             )
 
-        flash("Неверная электронная почта или пароль.", "error")
+            if user:
+                login_user(user)
 
-    return render_template("login.html")
+                flash("Вы вошли в систему.", "success")
+
+                return redirect(
+                    url_for("ui.admin_dashboard")
+                    if user.is_admin
+                    else url_for("ui.home")
+                )
+
+            errors = {
+                "email": "Проверьте адрес электронной почты.",
+                "password": "Проверьте пароль.",
+            }
+            flash("Неверная электронная почта или пароль.", "error")
+        else:
+            flash("Исправьте ошибки в форме входа.", "error")
+
+    return render_template("login.html", errors=errors, form=form)
 
 
 @ui.route("/signup", methods=["GET", "POST"])
 def signup():
-    if request.method == "POST":
-        email = request.form["email"].strip().lower()
+    form = {"name": "", "email": ""}
+    errors = {}
 
-        if repo.get_user_by_email(email):
-            flash(
-                "Пользователь с такой электронной почтой уже существует.",
-                "error",
-            )
-            return render_template("signup.html")
+    if request.method == "POST":
+        form, errors = validate_signup_form(request.form)
+
+        if not errors and repo.get_user_by_email(form["email"]):
+            errors["email"] = "Пользователь с такой электронной почтой уже существует."
+
+        if errors:
+            flash("Исправьте ошибки в форме регистрации.", "error")
+            return render_template("signup.html", errors=errors, form=form)
 
         try:
             user = repo.create_user(
-                email=email,
-                name=request.form["name"].strip(),
-                password_hash=hash_password(request.form["password"]),
+                email=form["email"],
+                name=form["name"],
+                password_hash=hash_password(form["password"]),
                 role="viewer",
             )
 
@@ -106,13 +167,10 @@ def signup():
 
         except IntegrityError:
             db.session.rollback()
+            errors["email"] = "Пользователь с такой электронной почтой уже существует."
+            flash("Не удалось создать учетную запись.", "error")
 
-            flash(
-                "Не удалось создать учетную запись.",
-                "error",
-            )
-
-    return render_template("signup.html")
+    return render_template("signup.html", errors=errors, form=form)
 
 
 @ui.post("/logout")
@@ -163,8 +221,8 @@ def checkout():
         return redirect(url_for("ui.cart"))
     totals = cart_totals(items)
     user = current_user()
-    if not user or user.is_admin:
-        flash("Войдите как покупатель, чтобы оформить заказ.", "error")
+    if not user:
+        flash("Войдите, чтобы оформить заказ.", "error")
         return redirect(url_for("ui.login"))
 
     if request.method == "POST":
@@ -313,17 +371,32 @@ def admin_update_user_role(user_id):
         flash("Роль пользователя обновлена.", "success")
     return redirect(url_for("ui.admin_dashboard"))
 
+
 @ui.route("/catalog")
 def catalog():
     filters = get_filters()
 
-    products = repo.list_products(
-        search=filters["q"],
-        category_slug=filters["category"],
-        stock=filters["stock"],
+    return render_template(
+        "catalog.html",
+        categories=repo.list_categories(),
+        products=repo.list_products(
+            search=filters["q"],
+            category_slug=filters["category"],
+            stock=filters["stock"],
+        ),
+        filters=filters,
     )
+
+
+@ui.route("/catalog/products")
+def catalog_products():
+    filters = get_filters()
 
     return render_template(
         "partials/product_grid.html",
-        products=products,
+        products=repo.list_products(
+            search=filters["q"],
+            category_slug=filters["category"],
+            stock=filters["stock"],
+        ),
     )

@@ -11,7 +11,7 @@
     <header class="site-header">
       <a class="brand" href="{{ url_for('ui.home') }}"><span class="brand-mark">♪</span><span>Музыкальный магазин</span></a>
       <nav class="main-nav" aria-label="Основная навигация">
-        <a href="{{ url_for('ui.home') }}#catalog">Каталог</a>
+        <a href="{{ url_for('ui.catalog') }}">Каталог</a>
         <a href="{{ url_for('ui.account') }}">Мой аккаунт</a>
         {% if current_user %}
           {% if current_user.is_admin %}<a href="{{ url_for('ui.admin_dashboard') }}">Администрирование</a>{% endif %}

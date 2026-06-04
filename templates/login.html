@@ -9,25 +9,32 @@
     <h1>Вход</h1>
   </div>
 
-  <form class="form-card auth-form" method="post" autocomplete="on">
-    <label class="field">
+  <form class="form-card auth-form" method="post" autocomplete="on" novalidate>
+    <label class="field {% if errors.email %}field-error{% endif %}">
       Электронная почта
       <input
         name="email"
         type="email"
         autocomplete="email"
+        value="{{ form.email }}"
+        aria-invalid="{{ 'true' if errors.email else 'false' }}"
+        {% if errors.email %}aria-describedby="email-error"{% endif %}
         required
       >
+      {% if errors.email %}<span id="email-error" class="error-message">{{ errors.email }}</span>{% endif %}
     </label>
 
-    <label class="field">
+    <label class="field {% if errors.password %}field-error{% endif %}">
       Пароль
       <input
         name="password"
         type="password"
         autocomplete="current-password"
+        aria-invalid="{{ 'true' if errors.password else 'false' }}"
+        {% if errors.password %}aria-describedby="password-error"{% endif %}
         required
       >
+      {% if errors.password %}<span id="password-error" class="error-message">{{ errors.password }}</span>{% endif %}
     </label>
 
     <button type="submit" class="button primary">
