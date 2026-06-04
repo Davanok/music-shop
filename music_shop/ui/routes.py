@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from music_shop.data import repositories as repo
 from music_shop.data.database import db
+from music_shop.data.enums import OrderStatus
 from music_shop.data.services import (
     DEFAULT_IMAGE,
     ROLE_LABELS,
@@ -257,8 +258,8 @@ def confirmation(order_number):
 @ui.route("/account")
 def account():
     user = current_user()
-    if not user or user.is_admin:
-        flash("Войдите как покупатель, чтобы посмотреть историю заказов.", "error")
+    if not user:
+        flash("Войдите, чтобы посмотреть историю заказов.", "error")
         return redirect(url_for("ui.login"))
     orders = repo.list_orders_for_email(user.email)
     return render_template("account.html", orders=orders)
@@ -267,18 +268,39 @@ def account():
 @ui.route("/admin")
 @admin_required
 def admin_dashboard():
+    allowed_sections = {"products", "categories", "users", "orders"}
+    active_section = request.args.get("section", "products")
+    if active_section not in allowed_sections:
+        active_section = "products"
+
+    entry_id = request.args.get("entry_id", type=int)
+    is_adding = request.args.get("action") == "new"
+
     categories = repo.list_categories()
     products = repo.list_products()
     orders = repo.list_orders()
     users = repo.list_users()
+
+    selected_product = repo.get_product(entry_id) if active_section == "products" and entry_id else None
+    selected_category = repo.get_category(entry_id) if active_section == "categories" and entry_id else None
+    selected_user = repo.get_user(entry_id) if active_section == "users" and entry_id else None
+    selected_order = repo.get_order(entry_id) if active_section == "orders" and entry_id else None
+
     return render_template(
         "admin/dashboard.html",
+        active_section=active_section,
         categories=categories,
         products=products,
         orders=orders,
         revenue=repo.total_revenue(),
         users=users,
         role_labels=ROLE_LABELS,
+        order_statuses=list(OrderStatus),
+        is_adding=is_adding,
+        selected_product=selected_product,
+        selected_category=selected_category,
+        selected_user=selected_user,
+        selected_order=selected_order,
     )
 
 
@@ -289,9 +311,9 @@ def admin_product_form(product_id=None):
     product = repo.get_product(product_id) if product_id else None
     if request.method == "POST":
         try:
-            repo.save_product(product, **product_payload_from_form(request.form, request.files, product))
+            saved_product = repo.save_product(product, **product_payload_from_form(request.form, request.files, product))
             flash("Товар обновлен." if product else "Товар создан.", "success")
-            return redirect(url_for("ui.admin_dashboard"))
+            return redirect(url_for("ui.admin_dashboard", section="products", entry_id=saved_product.id))
         except IntegrityError:
             db.session.rollback()
             flash("Адрес товара должен быть уникальным.", "error")
@@ -307,7 +329,7 @@ def admin_delete_product(product_id):
     except IntegrityError:
         db.session.rollback()
         flash("Нельзя удалить товар, который есть в заказе.", "error")
-    return redirect(url_for("ui.admin_dashboard"))
+    return redirect(url_for("ui.admin_dashboard", section="products"))
 
 
 @ui.post("/admin/categories")
@@ -315,17 +337,37 @@ def admin_delete_product(product_id):
 def admin_add_category():
     try:
         name = request.form["name"].strip()
-        repo.create_category(
-            slug=slugify(name),
+        category = repo.create_category(
+            slug=slugify(request.form.get("slug") or name),
             name=name,
             description=request.form.get("description") or "Пользовательская категория.",
             image_url=request.form.get("image_url") or DEFAULT_IMAGE,
         )
         flash("Категория добавлена.", "success")
+        return redirect(url_for("ui.admin_dashboard", section="categories", entry_id=category.id))
     except IntegrityError:
         db.session.rollback()
         flash("Адрес категории должен быть уникальным.", "error")
-    return redirect(url_for("ui.admin_dashboard"))
+    return redirect(url_for("ui.admin_dashboard", section="categories", action="new"))
+
+
+@ui.post("/admin/categories/<int:category_id>/edit")
+@admin_required
+def admin_update_category(category_id):
+    try:
+        name = request.form["name"].strip()
+        repo.update_category(
+            category_id,
+            slug=slugify(request.form.get("slug") or name),
+            name=name,
+            description=request.form.get("description") or "Пользовательская категория.",
+            image_url=request.form.get("image_url") or DEFAULT_IMAGE,
+        )
+        flash("Категория обновлена.", "success")
+    except IntegrityError:
+        db.session.rollback()
+        flash("Адрес категории должен быть уникальным.", "error")
+    return redirect(url_for("ui.admin_dashboard", section="categories", entry_id=category_id))
 
 
 @ui.post("/admin/categories/<int:category_id>/delete")
@@ -337,7 +379,7 @@ def admin_delete_category(category_id):
     except IntegrityError:
         db.session.rollback()
         flash("Нельзя удалить категорию, пока в ней есть товары.", "error")
-    return redirect(url_for("ui.admin_dashboard"))
+    return redirect(url_for("ui.admin_dashboard", section="categories"))
 
 
 @ui.post("/admin/users")
@@ -345,17 +387,42 @@ def admin_delete_category(category_id):
 def admin_create_user():
     try:
         role = request.form["role"] if request.form["role"] in ROLE_LABELS else "viewer"
-        repo.create_user(
+        user = repo.create_user(
             email=request.form["email"].strip().lower(),
             name=request.form["name"].strip(),
             password_hash=hash_password(request.form["password"]),
             role=role,
         )
         flash("Учетная запись создана.", "success")
+        return redirect(url_for("ui.admin_dashboard", section="users", entry_id=user.id))
     except IntegrityError:
         db.session.rollback()
         flash("Пользователь с такой электронной почтой уже существует.", "error")
-    return redirect(url_for("ui.admin_dashboard"))
+    return redirect(url_for("ui.admin_dashboard", section="users", action="new"))
+
+
+@ui.post("/admin/users/<int:user_id>/edit")
+@admin_required
+def admin_update_user(user_id):
+    try:
+        role = request.form["role"] if request.form["role"] in ROLE_LABELS else "viewer"
+        if current_user() and user_id == current_user().id and role != "admin":
+            role = "admin"
+            flash("Нельзя снять роль администратора у своей учетной записи.", "error")
+        password = request.form.get("password", "")
+        password_hash = hash_password(password) if password else None
+        repo.update_user(
+            user_id,
+            email=request.form["email"].strip().lower(),
+            name=request.form["name"].strip(),
+            role=role,
+            password_hash=password_hash,
+        )
+        flash("Пользователь обновлен.", "success")
+    except IntegrityError:
+        db.session.rollback()
+        flash("Пользователь с такой электронной почтой уже существует.", "error")
+    return redirect(url_for("ui.admin_dashboard", section="users", entry_id=user_id))
 
 
 @ui.post("/admin/users/<int:user_id>/role")
@@ -369,7 +436,22 @@ def admin_update_user_role(user_id):
         flash("Нельзя снять роль администратора у своей учетной записи.", "error")
     else:
         flash("Роль пользователя обновлена.", "success")
-    return redirect(url_for("ui.admin_dashboard"))
+    return redirect(url_for("ui.admin_dashboard", section="users", entry_id=user_id))
+
+
+@ui.post("/admin/orders/<int:order_id>/status")
+@admin_required
+def admin_update_order_status(order_id):
+    status_value = request.form.get("status")
+    try:
+        status = OrderStatus(status_value)
+    except ValueError:
+        flash("Некорректный статус заказа.", "error")
+        return redirect(url_for("ui.admin_dashboard", section="orders", entry_id=order_id))
+
+    repo.update_order_status(order_id, status)
+    flash("Статус заказа обновлен.", "success")
+    return redirect(url_for("ui.admin_dashboard", section="orders", entry_id=order_id))
 
 
 @ui.route("/catalog")

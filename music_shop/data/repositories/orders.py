@@ -57,3 +57,23 @@ def total_revenue():
     return db.session.scalar(
         select(func.coalesce(func.sum(order_totals.c.total), 0))
     )
+
+
+def get_order(order_id: int):
+    return db.session.scalars(
+        select(Order)
+        .options(
+            joinedload(Order.user),
+            joinedload(Order.address),
+            joinedload(Order.items).joinedload(OrderItem.product),
+        )
+        .where(Order.id == order_id)
+    ).unique().first()
+
+
+def update_order_status(order_id: int, status):
+    order = get_order(order_id)
+    if order:
+        order.status = status
+        db.session.commit()
+    return order

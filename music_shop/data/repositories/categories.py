@@ -31,3 +31,14 @@ def delete_category(category_id: int):
     if category:
         db.session.delete(category)
         db.session.commit()
+
+
+def update_category(category_id: int, slug, name, description, image_url):
+    category = get_category(category_id)
+    if category:
+        category.slug = slug
+        category.name = name
+        category.description = description
+        category.image_url = image_url
+        db.session.commit()
+    return category

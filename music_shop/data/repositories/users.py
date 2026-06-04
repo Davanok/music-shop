@@ -31,9 +31,22 @@ def create_user(email, name, password_hash, role="customer"):
     db.session.commit()
     return user
 
+
 def update_user_role(user_id: int, role: str):
     user = get_user(user_id)
     if user:
         user.role = role
+        db.session.commit()
+    return user
+
+
+def update_user(user_id: int, email, name, role, password_hash=None):
+    user = get_user(user_id)
+    if user:
+        user.email = email
+        user.name = name
+        user.role = role
+        if password_hash:
+            user.password_hash = password_hash
         db.session.commit()
     return user
