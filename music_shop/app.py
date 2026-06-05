@@ -7,7 +7,7 @@ from .api import api as api_blueprint
 from .config import Config
 from .data.services import cart_count, cart_quantities, cart_totals, current_user
 from .data.seeds import seed_data
-from .ui import ui as ui_blueprint
+from .ui import register_routes as register_ui_routes
 
 
 def create_app(config_object=Config):
@@ -15,7 +15,7 @@ def create_app(config_object=Config):
     app.config.from_object(config_object)
     config_object.init_app(app)
     db.init_app(app)
-    app.register_blueprint(ui_blueprint)
+    register_ui_routes(app)
     app.register_blueprint(api_blueprint)
 
     @app.cli.command("init-db")
