@@ -18,7 +18,7 @@
             <p class="eyebrow">Панель администратора</p>
             <h1>Управление магазином</h1>
         </div>
-        <a class="button ghost" href="{{ url_for('ui.account') }}">Мой аккаунт</a>
+        <a class="button ghost" href="{{ url_for('account.index') }}">Мой аккаунт</a>
     </div>
 
     <div class="admin-metrics">
@@ -44,19 +44,19 @@
         <aside class="admin-rail" aria-label="Разделы управления">
             <p class="admin-rail-title">Управление</p>
             <nav class="admin-section-nav">
-                <a class="admin-section-link {% if active_section == 'products' %}active{% endif %}" href="{{ url_for('ui.admin_dashboard', section='products') }}">
+                <a class="admin-section-link {% if active_section == 'products' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='products') }}">
                     <span>Товары</span>
                     <strong>{{ products|length }}</strong>
                 </a>
-                <a class="admin-section-link {% if active_section == 'categories' %}active{% endif %}" href="{{ url_for('ui.admin_dashboard', section='categories') }}">
+                <a class="admin-section-link {% if active_section == 'categories' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='categories') }}">
                     <span>Категории</span>
                     <strong>{{ categories|length }}</strong>
                 </a>
-                <a class="admin-section-link {% if active_section == 'users' %}active{% endif %}" href="{{ url_for('ui.admin_dashboard', section='users') }}">
+                <a class="admin-section-link {% if active_section == 'users' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='users') }}">
                     <span>Пользователи</span>
                     <strong>{{ users|length }}</strong>
                 </a>
-                <a class="admin-section-link {% if active_section == 'orders' %}active{% endif %}" href="{{ url_for('ui.admin_dashboard', section='orders') }}">
+                <a class="admin-section-link {% if active_section == 'orders' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='orders') }}">
                     <span>Заказы</span>
                     <strong>{{ orders|length }}</strong>
                 </a>
@@ -70,7 +70,7 @@
                     <h2>{{ section_titles[active_section] }}</h2>
                 </div>
                 {% if active_section != 'orders' %}
-                <a class="button primary" href="{{ url_for('ui.admin_dashboard', section=active_section, action='new') }}">
+                <a class="button primary" href="{{ url_for('admin.dashboard.index', section=active_section, action='new') }}">
                     Добавить
                 </a>
                 {% endif %}
@@ -112,8 +112,8 @@
                         {% endif %}
                     </td>
                     <td class="actions">
-                        <a class="button ghost" href="{{ url_for('ui.admin_dashboard', section='products', entry_id=product.id) }}">Выбрать</a>
-                        <form method="post" action="{{ url_for('ui.admin_delete_product', product_id=product.id) }}">
+                        <a class="button ghost" href="{{ url_for('admin.dashboard.index', section='products', entry_id=product.id) }}">Выбрать</a>
+                        <form method="post" action="{{ url_for('admin.products.delete', product_id=product.id) }}">
                             <button class="danger">Удалить</button>
                         </form>
                     </td>
@@ -145,8 +145,8 @@
                     </td>
                     <td>{{ category.products|length }}</td>
                     <td class="actions">
-                        <a class="button ghost" href="{{ url_for('ui.admin_dashboard', section='categories', entry_id=category.id) }}">Выбрать</a>
-                        <form method="post" action="{{ url_for('ui.admin_delete_category', category_id=category.id) }}">
+                        <a class="button ghost" href="{{ url_for('admin.dashboard.index', section='categories', entry_id=category.id) }}">Выбрать</a>
+                        <form method="post" action="{{ url_for('admin.categories.delete', category_id=category.id) }}">
                             <button class="danger">Удалить</button>
                         </form>
                     </td>
@@ -173,7 +173,7 @@
                     </td>
                     <td>{{ role_labels.get(user.role, user.role) }}</td>
                     <td class="actions">
-                        <a class="button ghost" href="{{ url_for('ui.admin_dashboard', section='users', entry_id=user.id) }}">Выбрать</a>
+                        <a class="button ghost" href="{{ url_for('admin.dashboard.index', section='users', entry_id=user.id) }}">Выбрать</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -201,7 +201,7 @@
                     <td>{{ order.user.name }}</td>
                     <td>{{ order.total|currency }}</td>
                     <td class="actions">
-                        <a class="button ghost" href="{{ url_for('ui.admin_dashboard', section='orders', entry_id=order.id) }}">Выбрать</a>
+                        <a class="button ghost" href="{{ url_for('admin.dashboard.index', section='orders', entry_id=order.id) }}">Выбрать</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -218,7 +218,7 @@
             <div class="panel-header">
                 <h2>{{ 'Новый товар' if is_adding else 'Редактировать товар' }}</h2>
             </div>
-            <form class="form-card embedded-admin-form" method="post" enctype="multipart/form-data" action="{{ url_for('ui.admin_product_form', product_id=selected_product.id) if selected_product else url_for('ui.admin_product_form') }}">
+            <form class="form-card embedded-admin-form" method="post" enctype="multipart/form-data" action="{{ url_for('admin.products.form', product_id=selected_product.id) if selected_product else url_for('admin.products.form') }}">
                 <label class="field">Название<input name="name" value="{{ selected_product.name if selected_product else '' }}" required></label>
                 <label class="field">Адрес товара<input name="slug" value="{{ selected_product.slug if selected_product else '' }}" placeholder="Если пусто, создается из названия"></label>
                 <label class="field">Категория<select name="category_id">{% for category in categories %}<option value="{{ category.id }}" {% if selected_product and selected_product.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></label>
@@ -235,7 +235,7 @@
             <div class="panel-header">
                 <h2>{{ 'Новая категория' if is_adding else 'Редактировать категорию' }}</h2>
             </div>
-            <form class="form-card embedded-admin-form" method="post" action="{{ url_for('ui.admin_update_category', category_id=selected_category.id) if selected_category else url_for('ui.admin_add_category') }}">
+            <form class="form-card embedded-admin-form" method="post" action="{{ url_for('admin.categories.update', category_id=selected_category.id) if selected_category else url_for('admin.categories.add') }}">
                 <label class="field">Название<input name="name" value="{{ selected_category.name if selected_category else '' }}" required></label>
                 <label class="field">Адрес категории<input name="slug" value="{{ selected_category.slug if selected_category else '' }}" placeholder="Если пусто, создается из названия"></label>
                 <label class="field">Описание<textarea name="description" rows="4">{{ selected_category.description if selected_category else '' }}</textarea></label>
@@ -248,7 +248,7 @@
             <div class="panel-header">
                 <h2>{{ 'Новый пользователь' if is_adding else 'Редактировать пользователя' }}</h2>
             </div>
-            <form class="form-card embedded-admin-form" method="post" action="{{ url_for('ui.admin_update_user', user_id=selected_user.id) if selected_user else url_for('ui.admin_create_user') }}">
+            <form class="form-card embedded-admin-form" method="post" action="{{ url_for('admin.users.update', user_id=selected_user.id) if selected_user else url_for('admin.users.create') }}">
                 <label class="field">Имя<input name="name" value="{{ selected_user.name if selected_user else '' }}" required></label>
                 <label class="field">Email<input name="email" type="email" value="{{ selected_user.email if selected_user else '' }}" required></label>
                 <label class="field">Пароль<input name="password" type="password" minlength="8" {% if not selected_user %}required{% endif %} placeholder="{{ 'Оставьте пустым, чтобы не менять' if selected_user else 'Минимум 8 символов' }}"></label>
@@ -265,7 +265,7 @@
                 <p><strong>Email:</strong> {{ selected_order.user.email }}</p>
                 <p><strong>Адрес:</strong> {{ selected_order.address.country }}, {{ selected_order.address.city }}, {{ selected_order.address.street }}, {{ selected_order.address.postal_code }}</p>
                 <p><strong>Сумма:</strong> {{ selected_order.total|currency }}</p>
-                <form class="form-card embedded-admin-form" method="post" action="{{ url_for('ui.admin_update_order_status', order_id=selected_order.id) }}">
+                <form class="form-card embedded-admin-form" method="post" action="{{ url_for('admin.orders.update_status', order_id=selected_order.id) }}">
                     <label class="field">Статус<select name="status">{% for status in order_statuses %}<option value="{{ status.value }}" {% if selected_order.status == status %}selected{% endif %}>{{ status.value }}</option>{% endfor %}</select></label>
                     <button class="button primary">Сохранить статус</button>
                 </form>

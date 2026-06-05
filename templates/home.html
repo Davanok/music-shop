@@ -6,7 +6,7 @@
     <h1>Найдите новое звучание с инструментами для каждого музыканта.</h1>
     <p>Выбирайте гитары, барабаны, клавишные, духовые инструменты, запчасти и аксессуары в магазине.</p>
     <div class="hero-actions">
-      <a class="button primary" href="{{ url_for('ui.catalog') }}">Перейти в каталог</a>
+      <a class="button primary" href="{{ url_for('shop.catalog') }}">Перейти в каталог</a>
       <a class="button ghost" href="#categories">Смотреть категории</a>
     </div>
   </div>
@@ -36,7 +36,7 @@
   </div>
   <div class="category-grid">
     {% for category in categories %}
-      <a class="category-card" href="{{ url_for('ui.catalog', category=category.slug) }}">
+      <a class="category-card" href="{{ url_for('shop.catalog', category=category.slug) }}">
         <img src="{{ category.image_url }}" alt="{{ category.name }}">
         <span>{{ category.name }}</span>
         <p>{{ category.description }}</p>
