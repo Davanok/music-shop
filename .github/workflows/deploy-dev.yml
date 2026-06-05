@@ -1,0 +1,64 @@
+name: Deploy DEV
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Add host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync files
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz \
+            --delete \
+            --exclude ".git" \
+            --exclude ".venv" \
+            --exclude ".env" \
+            --exclude "__pycache__" \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/root/music-shop-dev/
+
+      - name: Install dependencies
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+
+              cd /root/music-shop-dev
+
+              if [ ! -d ".venv" ]; then
+                python3 -m venv .venv
+              fi
+
+              source .venv/bin/activate
+
+              pip install --upgrade pip
+              pip install -r requirements.txt
+
+          EOF
+
+      - name: Restart dev service
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+              sudo systemctl restart music-shop-dev
+              sudo systemctl status music-shop-dev --no-pager
+          EOF
