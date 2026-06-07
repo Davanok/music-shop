@@ -995,3 +995,21 @@ input, select, textarea {
         min-width: 180px;
     }
 }
+.category-tree--depth-1,
+.category-tree--depth-2 {
+  display: none;
+}
+
+.category-tree__item.is-open > .category-tree--depth-1,
+.category-tree__item.is-open > .category-tree--depth-2 {
+  display: block;
+}
+
+.category-tree__arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.category-tree__item.is-open > .category-tree__label .category-tree__arrow {
+  transform: rotate(90deg);
+}

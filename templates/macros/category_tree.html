@@ -3,22 +3,20 @@
     {% for cat in nodes %}
       {% set is_active = cat.slug == filters.category %}
       {% set is_open   = cat.slug in active_trail %}
-      <li class="category-tree__item
-                 {% if is_active %} is-active{% endif %}
-                 {% if is_open   %} is-open{% endif %}">
+      <li class="category-tree__item{% if is_active %} is-active{% endif %}{% if is_open or is_active %} is-open{% endif %}">
 
         <button
           type="button"
-          class="category-tree__label"
+          class="category-tree__label{% if is_active %} is-active{% endif %}"
           data-slug="{{ cat.slug }}"
         >
           {{ cat.name }}
           {% if cat.children %}
-            <span class="category-tree__arrow">{% if is_open %}▾{% else %}▸{% endif %}</span>
+            <span class="category-tree__arrow">▸</span>
           {% endif %}
         </button>
 
-        {% if cat.children and (is_open or is_active) %}
+        {% if cat.children %}
           {{ render_tree(cat.children, active_trail, filters, depth + 1) }}
         {% endif %}
 
