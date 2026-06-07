@@ -61,9 +61,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadProducts() {
     const params = new URLSearchParams(new FormData(form));
-    const response = await fetch(`/catalog/products?${params.toString()}`);
-    products.innerHTML = await response.text();
-    history.replaceState({}, "", `/catalog?${params.toString()}`);
+    products.classList.add("is-loading");          // ← show spinner
+    try {
+      const response = await fetch(`/catalog/products?${params.toString()}`);
+      products.innerHTML = await response.text();
+      history.replaceState({}, "", `/catalog?${params.toString()}`);
+    } finally {
+      products.classList.remove("is-loading");     // ← always hide
+    }
   }
 
   // ── Category tree clicks ──────────────────────────────────────────────────

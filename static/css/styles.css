@@ -939,6 +939,53 @@ input:focus, select:focus, textarea:focus {
 .category-tree__item.is-open > .category-tree__label .category-tree__arrow {
     transform: rotate(90deg)
 }
+#catalog-products {
+  position: relative;
+}
+
+#catalog-products.is-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+  border-radius: inherit;
+}
+
+#catalog-products.is-loading::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 11;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border: 3px solid rgba(0,0,0,0.12);
+  border-top-color: #111;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Compact category tree ───────────────────────────── */
+.category-tree__label {
+  padding-block: 0.25rem;   /* was likely 0.5rem+ */
+  line-height: 1.3;
+  font-size: 0.875rem;
+}
+
+.category-tree {
+  row-gap: 0;               /* remove any gap between items */
+}
+
+.category-tree__item {
+  margin-block: 0;          /* collapse vertical margins */
+}
 
 /* ─── RESPONSIVE ──────────────────────────────────────── */
 
