@@ -55,30 +55,44 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("catalog-filters");
-
   if (!form) return;
-
   const products = document.getElementById("catalog-products");
   let timeout;
 
   async function loadProducts() {
     const params = new URLSearchParams(new FormData(form));
     const response = await fetch(`/catalog/products?${params.toString()}`);
-
     products.innerHTML = await response.text();
-
-    history.replaceState(
-      {},
-      "",
-      `/catalog?${params.toString()}`
-    );
+    history.replaceState({}, "", `/catalog?${params.toString()}`);
   }
+
+  // ── Category tree clicks ──────────────────────────────────────────────────
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-slug]");
+    if (!btn) return;
+
+    const slug = btn.dataset.slug;
+
+    // Update hidden input
+    document.getElementById("category-value").value = slug;
+
+    // Toggle open/closed for nodes that have children
+    const li = btn.closest("li.category-tree__item");
+    if (li) li.classList.toggle("is-open");
+
+    // Swap is-active across all labeled nodes
+    document.querySelectorAll("[data-slug]").forEach((el) => {
+      el.classList.toggle("is-active", el.dataset.slug === slug);
+    });
+
+    loadProducts();
+  });
+  // ─────────────────────────────────────────────────────────────────────────
 
   form.addEventListener("input", () => {
     clearTimeout(timeout);
     timeout = setTimeout(loadProducts, 300);
   });
-
   form.addEventListener("change", loadProducts);
 });
 </script>
