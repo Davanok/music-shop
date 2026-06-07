@@ -78,14 +78,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const slug = btn.dataset.slug;
 
-    // Update hidden input
     document.getElementById("category-value").value = slug;
 
-    // Toggle open/closed for nodes that have children
-    const li = btn.closest("li.category-tree__item");
-    if (li) li.classList.toggle("is-open");
+    // Закрываем все категории
+    document.querySelectorAll(".category-tree__item").forEach((item) => {
+      item.classList.remove("is-open");
+    });
 
-    // Swap is-active across all labeled nodes
+    // Открываем текущую ветку и всех родителей
+    let li = btn.closest(".category-tree__item");
+
+    while (li) {
+      li.classList.add("is-open");
+      li = li.parentElement.closest(".category-tree__item");
+    }
+
     document.querySelectorAll("[data-slug]").forEach((el) => {
       el.classList.toggle("is-active", el.dataset.slug === slug);
     });

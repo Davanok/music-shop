@@ -335,7 +335,8 @@ button:disabled, .button.disabled { cursor: not-allowed; opacity: .4 }
 .filters {
     display: grid;
     grid-template-columns: minmax(220px, 1.4fr) minmax(160px, .8fr) minmax(160px, .8fr) auto;
-    gap: .5rem
+    gap: .5rem;
+    align-items: start;
 }
 
 input, select, textarea {
@@ -858,7 +859,7 @@ input:focus, select:focus, textarea:focus {
     gap: .15rem;
     padding: .5rem;
     background: var(--surface);
-    border: var(--border)
+    border: var(--border);
 }
 
 .category-tree {
@@ -919,7 +920,13 @@ input:focus, select:focus, textarea:focus {
     font-size: .65rem;
     transition: transform .2s
 }
+.category-tree__item > .category-tree {
+    display: none;
+}
 
+.category-tree__item.is-open > .category-tree {
+    display: block;
+}
 .category-tree__item.is-open > .category-tree__label .category-tree__arrow {
     transform: rotate(90deg)
 }
