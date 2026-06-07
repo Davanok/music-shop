@@ -25,36 +25,6 @@ def home():
     )
 
 
-@bp.route("/catalog")
-def catalog():
-    filters = get_filters()
-
-    return render_template(
-        "catalog.html",
-        categories=repo.list_categories(),
-        products=repo.list_products(
-            search=filters["q"],
-            category_slug=filters["category"],
-            stock=filters["stock"],
-        ),
-        filters=filters,
-    )
-
-
-@bp.route("/catalog/products")
-def catalog_products():
-    filters = get_filters()
-
-    return render_template(
-        "partials/product_grid.html",
-        products=repo.list_products(
-            search=filters["q"],
-            category_slug=filters["category"],
-            stock=filters["stock"],
-        ),
-    )
-
-
 @bp.route("/products/<slug>")
 def details(slug):
     product = repo.get_product_by_slug(slug)
@@ -62,3 +32,40 @@ def details(slug):
         flash("Товар не найден.", "error")
         return redirect(url_for("shop.home"))
     return render_template("product_detail.html", product=product, gallery=product_gallery(product))
+
+
+def _active_trail(slug: str) -> set[str]:
+    """Slugs of selected category + all its ancestors."""
+    if not slug or slug == "all":
+        return set()
+    cat = repo.get_category_by_slug(slug)
+    if not cat:
+        return set()
+    return {c.slug for c in cat.breadcrumb}  # breadcrumb from model helper
+
+
+@bp.route("/catalog")
+def catalog():
+    filters = get_filters()
+    roots = repo.list_categories(root_only=True)
+    return render_template(
+        "catalog.html",
+        categories=roots,                          # only roots; children via .children
+        active_trail=_active_trail(filters["category"]),
+        products=repo.list_products(**filters),
+        filters=filters,
+    )
+
+
+@bp.route("/catalog/products")
+def catalog_products():
+    filters = get_filters()
+    roots = repo.list_categories(root_only=True)
+    return render_template(
+        "partials/product_grid.html",
+        products=repo.list_products(**filters),
+        # pass these too if your partial renders filters
+        categories=roots,
+        active_trail=_active_trail(filters["category"]),
+        filters=filters,
+    )

@@ -18,18 +18,22 @@
         value="{{ filters.q }}"
       >
 
-      <select name="category">
-        <option value="all">Все категории</option>
+      {% from "macros/category_tree.html" import render_tree %}
 
-        {% for category in categories %}
-          <option
-            value="{{ category.slug }}"
-            {% if filters.category == category.slug %}selected{% endif %}
-          >
-            {{ category.name }}
-          </option>
-        {% endfor %}
-      </select>
+      {# Hidden input carries the selected slug for the JS form serialiser #}
+      <input type="hidden" name="category" id="category-value" value="{{ filters.category }}">
+
+      <div class="category-tree-wrapper">
+        <button
+          type="button"
+          class="category-tree__label {% if filters.category == 'all' %}is-active{% endif %}"
+          data-slug="all"
+        >
+          Все категории
+        </button>
+
+        {{ render_tree(categories, active_trail) }}
+      </div>
 
       <select name="stock">
         <option value="all">Любое наличие</option>

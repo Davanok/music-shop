@@ -8,7 +8,7 @@ class Config:
     MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
     MYSQL_USER = os.getenv("MYSQL_USER", "music_shop")
     MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "music_shop_password")
-    MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "music_shop")
+    MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "music_shop_dev")
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL",
         f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}",

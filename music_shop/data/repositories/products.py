@@ -1,8 +1,10 @@
-from sqlalchemy import Select, select
+from sqlalchemy import Select, select, or_
 from sqlalchemy.orm import joinedload
 
 from music_shop.data.database import db
 from music_shop.data.models import Category, Product
+from music_shop.data.repositories import get_category_by_slug
+from music_shop.data.repositories.categories import _collect_category_ids
 
 
 def product_query():
@@ -10,43 +12,41 @@ def product_query():
 
 
 def list_products(
-    search="",
-    category_slug="all",
-    stock="all",
-    featured_only=False,
-    limit=None,
+    search: str = "",
+    category_slug: str = "all",
+    stock: str = "all",
+    featured_only: bool = False,
+    limit: int | None = None,
 ):
-    statement: Select = product_query()
+    q = select(Product)
 
-    if featured_only:
-        statement = statement.where(Product.featured.is_(True))
-
+    # Full-text search
     if search:
         term = f"%{search}%"
-        statement = statement.where(
-            (Product.name.like(term)) |
-            (Product.description.like(term))
+        q = q.where(
+            or_(Product.name.ilike(term), Product.description.ilike(term))
         )
 
-    if category_slug != "all":
-        statement = statement.join(Product.category).where(
-            Category.slug == category_slug
-        )
+    # Deep category filter — includes all descendants
+    if category_slug and category_slug != "all":
+        category = get_category_by_slug(category_slug)
+        if category:
+            ids = _collect_category_ids(category)
+            q = q.where(Product.category_id.in_(ids))
 
+    # Stock filter
     if stock == "in-stock":
-        statement = statement.where(Product.stock > 0)
+        q = q.where(Product.stock > 0)
     elif stock == "out-of-stock":
-        statement = statement.where(Product.stock == 0)
+        q = q.where(Product.stock == 0)
 
-    statement = statement.order_by(
-        Product.featured.desc(),
-        Product.name,
-    )
+    if featured_only:
+        q = q.where(Product.featured.is_(True))
 
     if limit:
-        statement = statement.limit(limit)
+        q = q.limit(limit)
 
-    return db.session.scalars(statement).unique().all()
+    return db.session.scalars(q).all()
 
 
 def get_product(product_id: int):
