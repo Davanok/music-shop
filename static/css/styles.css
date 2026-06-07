@@ -734,9 +734,10 @@ input:focus, select:focus, textarea:focus {
 .admin-form-panel {
     position: sticky;
     top: 70px;
-    max-height: calc(100vh - 90px);
-    overflow: auto
+    overflow: visible;
+    max-height: none;
 }
+
 
 .admin-form-panel h2, .admin-list-panel h2 {
     margin-bottom: 0;
@@ -745,7 +746,14 @@ input:focus, select:focus, textarea:focus {
 
 .entry-title-cell { display: flex; align-items: center; gap: .75rem; min-width: 220px }
 
-.embedded-admin-form { padding: 0; background: transparent; border: 0; box-shadow: none }
+.embedded-admin-form {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+    max-height: none;
+}
 
 .order-detail-card { display: grid; gap: .75rem }
 .order-detail-card p { margin-bottom: 0 }
@@ -979,6 +987,7 @@ input:focus, select:focus, textarea:focus {
 
 .admin-table th,
 .admin-table td {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1001,6 +1010,20 @@ input:focus, select:focus, textarea:focus {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.products-table th:nth-child(2),
+.products-table th:nth-child(3),
+.products-table td:nth-child(2),
+.products-table td:nth-child(3),
+
+.categories-table th:nth-child(2),
+.categories-table td:nth-child(2),
+
+.users-table th:nth-child(2),
+.users-table td:nth-child(2) {
+    text-align: center;
+    vertical-align: middle;
 }
 
 /* ── Delete button inside the form panel ─────────────────── */
