@@ -80,18 +80,18 @@
             <div class="toolbar">
                 <input id="product-search" type="search" placeholder="Поиск товара...">
             </div>
-            <table class="admin-table compact-admin-table">
+            <table class="admin-table compact-admin-table products-table">
                 <thead>
                 <tr>
                     <th>Товар</th>
                     <th>Цена</th>
                     <th>Остаток</th>
-                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for product in products %}
                 <tr class="product-row {% if selected_product and selected_product.id == product.id %}selected{% endif %}">
+                    <a class="row-link" href="{{ url_for('admin.dashboard.index', section='products', entry_id=product.id) }}" aria-label="Выбрать {{ product.name }}"></a>
                     <td>
                         <div class="entry-title-cell">
                             <img src="{{ product.image_url }}" alt="{{ product.name }}" class="table-thumb">
@@ -111,29 +111,23 @@
                             <span class="stock success">{{ product.stock }}</span>
                         {% endif %}
                     </td>
-                    <td class="actions">
-                        <a class="button ghost" href="{{ url_for('admin.dashboard.index', section='products', entry_id=product.id) }}">Выбрать</a>
-                        <form method="post" action="{{ url_for('admin.products.delete', product_id=product.id) }}">
-                            <button class="danger">Удалить</button>
-                        </form>
-                    </td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
 
             {% elif active_section == 'categories' %}
-            <table class="admin-table compact-admin-table">
+            <table class="admin-table compact-admin-table categories-table">
                 <thead>
                 <tr>
                     <th>Категория</th>
                     <th>Товары</th>
-                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for category in categories %}
                 <tr class="{% if selected_category and selected_category.id == category.id %}selected{% endif %}">
+                    <a class="row-link" href="{{ url_for('admin.dashboard.index', section='categories', entry_id=category.id) }}" aria-label="Выбрать {{ category.name }}"></a>
                     <td>
                         <div class="entry-title-cell">
                             <img src="{{ category.image_url }}" alt="{{ category.name }}" class="table-thumb">
@@ -144,37 +138,28 @@
                         </div>
                     </td>
                     <td>{{ category.products|length }}</td>
-                    <td class="actions">
-                        <a class="button ghost" href="{{ url_for('admin.dashboard.index', section='categories', entry_id=category.id) }}">Выбрать</a>
-                        <form method="post" action="{{ url_for('admin.categories.delete', category_id=category.id) }}">
-                            <button class="danger">Удалить</button>
-                        </form>
-                    </td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
 
             {% elif active_section == 'users' %}
-            <table class="admin-table compact-admin-table">
+            <table class="admin-table compact-admin-table users-table">
                 <thead>
                 <tr>
                     <th>Пользователь</th>
                     <th>Роль</th>
-                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for user in users %}
                 <tr class="{% if selected_user and selected_user.id == user.id %}selected{% endif %}">
+                    <a class="row-link" href="{{ url_for('admin.dashboard.index', section='users', entry_id=user.id) }}" aria-label="Выбрать {{ user.name }}"></a>
                     <td>
                         <strong>{{ user.name }}</strong>
                         <div class="product-meta">{{ user.email }}</div>
                     </td>
                     <td>{{ role_labels.get(user.role, user.role) }}</td>
-                    <td class="actions">
-                        <a class="button ghost" href="{{ url_for('admin.dashboard.index', section='users', entry_id=user.id) }}">Выбрать</a>
-                    </td>
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -182,27 +167,24 @@
 
             {% else %}
             {% if orders %}
-            <table class="admin-table compact-admin-table">
+            <table class="admin-table compact-admin-table orders-table">
                 <thead>
                 <tr>
                     <th>Заказ</th>
                     <th>Клиент</th>
                     <th>Сумма</th>
-                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for order in orders %}
                 <tr class="{% if selected_order and selected_order.id == order.id %}selected{% endif %}">
+                    <a class="row-link" href="{{ url_for('admin.dashboard.index', section='orders', entry_id=order.id) }}" aria-label="Выбрать заказ {{ order.order_number }}"></a>
                     <td>
                         <strong>{{ order.order_number }}</strong>
                         <div class="product-meta">{{ order.created_at.strftime('%d.%m.%Y') }}</div>
                     </td>
                     <td>{{ order.user.name }}</td>
                     <td>{{ order.total|currency }}</td>
-                    <td class="actions">
-                        <a class="button ghost" href="{{ url_for('admin.dashboard.index', section='orders', entry_id=order.id) }}">Выбрать</a>
-                    </td>
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -230,6 +212,13 @@
                 {% if selected_product %}<img class="upload-preview" src="{{ selected_product.image_url }}" alt="Предпросмотр {{ selected_product.name }}">{% endif %}
                 <button class="button primary">Сохранить товар</button>
             </form>
+            {% if selected_product %}
+            <div class="delete-form-row">
+                <form method="post" action="{{ url_for('admin.products.delete', product_id=selected_product.id) }}">
+                    <button class="danger">Удалить товар</button>
+                </form>
+            </div>
+            {% endif %}
 
             {% elif active_section == 'categories' and (selected_category or is_adding) %}
             <div class="panel-header">
@@ -243,6 +232,13 @@
                 {% if selected_category %}<img class="upload-preview" src="{{ selected_category.image_url }}" alt="{{ selected_category.name }}">{% endif %}
                 <button class="button primary">Сохранить категорию</button>
             </form>
+            {% if selected_category %}
+            <div class="delete-form-row">
+                <form method="post" action="{{ url_for('admin.categories.delete', category_id=selected_category.id) }}">
+                    <button class="danger">Удалить категорию</button>
+                </form>
+            </div>
+            {% endif %}
 
             {% elif active_section == 'users' and (selected_user or is_adding) %}
             <div class="panel-header">
