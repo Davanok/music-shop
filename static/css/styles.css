@@ -3,6 +3,7 @@
 :root {
     --bg: #f5f2eb;
     --surface: #ffffff;
+    --surface-hover: #d1d1d1;
     --surface-dark: #1a1714;
     --text: #1a1714;
     --muted: #6b6560;
@@ -612,28 +613,6 @@ input:focus, select:focus, textarea:focus {
 
 .admin-content { display: flex; flex-direction: column; gap: 2rem }
 
-.admin-table { width: 100%; min-width: 900px; border-collapse: collapse }
-
-.admin-table th {
-    padding: .65rem 1rem;
-    text-align: left;
-    font-size: .72rem;
-    font-weight: 700;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-    font-family: var(--mono);
-    color: var(--muted);
-    border-bottom: var(--border)
-}
-
-.admin-table td {
-    padding: .85rem 1rem;
-    border-bottom: var(--border-light);
-    vertical-align: middle
-}
-
-.admin-table td:nth-child(2) { min-width: 240px }
-
 .table-thumb {
     width: 56px;
     height: 56px;
@@ -763,9 +742,6 @@ input:focus, select:focus, textarea:focus {
     margin-bottom: 0;
     font-size: clamp(1.4rem, 2vw, 2rem)
 }
-
-.compact-admin-table { min-width: 640px }
-.compact-admin-table tr.selected { background: #f5f2eb }
 
 .entry-title-cell { display: flex; align-items: center; gap: .75rem; min-width: 220px }
 
@@ -985,6 +961,57 @@ input:focus, select:focus, textarea:focus {
 
 .category-tree__item {
   margin-block: 0;          /* collapse vertical margins */
+}
+
+/* ── Clickable rows ───────────────────────────────────────── */
+.admin-table tbody tr[data-href] {
+    cursor: pointer;
+}
+.admin-table tbody tr[data-href]:hover {
+    background: var(--surface-hover, rgba(0,0,0,.04));
+}
+
+/* ── No horizontal scroll ─────────────────────────────────── */
+.admin-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.admin-table th,
+.admin-table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-table .entry-title-cell {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    min-width: 0;
+}
+
+.admin-table .entry-title-cell > div {
+    min-width: 0;
+}
+
+.admin-table .entry-title-cell strong,
+.admin-table .entry-title-cell .product-meta {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Delete button inside the form panel ─────────────────── */
+.delete-form-row {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border, #e5e7eb);
+}
+
+.delete-form-row button.danger {
+    width: 100%;
 }
 
 /* ─── RESPONSIVE ──────────────────────────────────────── */
