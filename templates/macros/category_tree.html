@@ -1,5 +1,4 @@
-{# Recursive macro — call once with root categories #}
-{% macro render_tree(nodes, active_trail, depth=0) %}
+{% macro render_tree(nodes, active_trail, filters, depth=0) %}
   <ul class="category-tree category-tree--depth-{{ depth }}">
     {% for cat in nodes %}
       {% set is_active = cat.slug == filters.category %}
@@ -19,9 +18,8 @@
           {% endif %}
         </button>
 
-        {# Recurse into children if this branch is open or active #}
         {% if cat.children and (is_open or is_active) %}
-          {{ render_tree(cat.children, active_trail, depth + 1) }}
+          {{ render_tree(cat.children, active_trail, filters, depth + 1) }}
         {% endif %}
 
       </li>

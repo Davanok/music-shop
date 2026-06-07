@@ -6,7 +6,7 @@ class Config:
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "dev-music-shop-secret")
     MYSQL_HOST = os.getenv("MYSQL_HOST", "127.0.0.1")
     MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
-    MYSQL_USER = os.getenv("MYSQL_USER", "music_shop")
+    MYSQL_USER = os.getenv("MYSQL_USER", "music_shop_dev")
     MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "music_shop_password")
     MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "music_shop_dev")
     SQLALCHEMY_DATABASE_URI = os.getenv(

@@ -52,7 +52,11 @@ def catalog():
         "catalog.html",
         categories=roots,                          # only roots; children via .children
         active_trail=_active_trail(filters["category"]),
-        products=repo.list_products(**filters),
+        products=repo.list_products(
+            search=filters["q"],
+            category_slug=filters["category"],
+            stock=filters["stock"]
+        ),
         filters=filters,
     )
 
@@ -63,7 +67,11 @@ def catalog_products():
     roots = repo.list_categories(root_only=True)
     return render_template(
         "partials/product_grid.html",
-        products=repo.list_products(**filters),
+        products=repo.list_products(
+            search=filters["q"],
+            category_slug=filters["category"],
+            stock=filters["stock"]
+        ),
         # pass these too if your partial renders filters
         categories=roots,
         active_trail=_active_trail(filters["category"]),
