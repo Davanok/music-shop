@@ -9,6 +9,7 @@ from music_shop.data.services import (
     place_order,
     update_cart,
 )
+from music_shop.data.enums import DeliveryMethod, AssemblyOption
 
 bp = Blueprint("cart", __name__)
 
@@ -43,11 +44,15 @@ def checkout():
     if not items:
         flash("Ваша корзина пуста.", "error")
         return redirect(url_for("cart.cart"))
-    totals = cart_totals(items)
+    
     user = current_user()
     if not user:
         flash("Войдите, чтобы оформить заказ.", "error")
         return redirect(url_for("auth.login"))
+
+    delivery_method = request.form.get("delivery_method", DeliveryMethod.DELIVERY)
+    assembly_option = request.form.get("assembly_option", AssemblyOption.NOT_REQUIRED)
+    totals = cart_totals(items, delivery_method, assembly_option)
 
     if request.method == "POST":
         try:
@@ -60,14 +65,26 @@ def checkout():
                     "street": request.form.get("street", ""),
                     "postal_code": request.form.get("postal_code", ""),
                 },
+                delivery_method,
+                assembly_option,
                 items,
             )
         except ValueError as error:
             flash(str(error), "error")
-            return redirect(url_for("cart.cart"))
+            return redirect(url_for("cart.checkout"))
         flash("Заказ успешно оформлен.", "success")
         return redirect(url_for("cart.confirmation", order_number=order.order_number))
-    return render_template("checkout.html", items=items, totals=totals, user=user)
+    
+    return render_template(
+        "checkout.html", 
+        items=items, 
+        totals=totals, 
+        user=user,
+        delivery_methods=DeliveryMethod,
+        assembly_options=AssemblyOption,
+        selected_delivery=delivery_method,
+        selected_assembly=assembly_option
+    )
 
 
 @bp.route("/confirmation/<order_number>")

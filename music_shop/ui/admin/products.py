@@ -3,14 +3,14 @@ from sqlalchemy.exc import IntegrityError
 
 from music_shop.data import repositories as repo
 from music_shop.data.database import db
-from music_shop.data.services import admin_required, product_payload_from_form
+from music_shop.data.services import manager_required, product_payload_from_form
 
 bp = Blueprint("products", __name__, url_prefix="/products")
 
 
 @bp.route("/new", methods=["GET", "POST"])
 @bp.route("/<int:product_id>/edit", methods=["GET", "POST"])
-@admin_required
+@manager_required
 def form(product_id=None):
     product = repo.get_product(product_id) if product_id else None
     if request.method == "POST":
@@ -26,7 +26,7 @@ def form(product_id=None):
 
 
 @bp.post("/<int:product_id>/delete")
-@admin_required
+@manager_required
 def delete(product_id):
     try:
         repo.delete_product(product_id)

@@ -12,4 +12,4 @@ def index():
         flash("Войдите, чтобы посмотреть историю заказов.", "error")
         return redirect(url_for("auth.login"))
     orders = repo.list_orders_for_email(user.email)
-    return render_template("account.html", orders=orders)
+    return render_template("account.html", orders=orders, user=user)

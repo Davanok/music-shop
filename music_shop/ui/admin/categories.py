@@ -5,14 +5,14 @@ from music_shop.data import repositories as repo
 from music_shop.data.database import db
 from music_shop.data.services import (
     DEFAULT_IMAGE,
-    admin_required,
+    manager_required,
     slugify,
 )
 
 bp = Blueprint("categories", __name__, url_prefix="/categories")
 
 @bp.post("")
-@admin_required
+@manager_required
 def add():
     try:
         name = request.form["name"].strip()
@@ -31,7 +31,7 @@ def add():
 
 
 @bp.post("/<int:category_id>/edit")
-@admin_required
+@manager_required
 def update(category_id):
     try:
         name = request.form["name"].strip()
@@ -50,7 +50,7 @@ def update(category_id):
 
 
 @bp.post("/<int:category_id>/delete")
-@admin_required
+@manager_required
 def delete(category_id):
     try:
         repo.delete_category(category_id)

@@ -17,7 +17,7 @@ bp = Blueprint("users", __name__, url_prefix="/users")
 @admin_required
 def create():
     try:
-        role = request.form["role"] if request.form["role"] in ROLE_LABELS else "viewer"
+        role = request.form["role"] if request.form["role"] in ROLE_LABELS else "user"
         user = repo.create_user(
             email=request.form["email"].strip().lower(),
             name=request.form["name"].strip(),
@@ -36,7 +36,7 @@ def create():
 @admin_required
 def update(user_id):
     try:
-        role = request.form["role"] if request.form["role"] in ROLE_LABELS else "viewer"
+        role = request.form["role"] if request.form["role"] in ROLE_LABELS else "user"
         if current_user() and user_id == current_user().id and role != "admin":
             role = "admin"
             flash("Нельзя снять роль администратора у своей учетной записи.", "error")

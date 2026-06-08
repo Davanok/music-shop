@@ -1,12 +1,12 @@
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, ForeignKey, Numeric, String, Text, Enum
+from sqlalchemy import Boolean, ForeignKey, Numeric, String, Text, Enum, Integer, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional
 
 from .database import db
-from .enums import OrderStatus
+from .enums import OrderStatus, DeliveryMethod, AssemblyOption
 
 
 class AppSetting(db.Model):
@@ -125,6 +125,18 @@ class Product(db.Model):
     category: Mapped["Category"] = relationship(back_populates="products")
     order_items: Mapped[list["OrderItem"]] = relationship(back_populates="product")
 
+    @property
+    def average_rating(self) -> float:
+        reviews = getattr(self, "reviews", [])
+        if not reviews:
+            return 0.0
+        return round(sum(r.rating for r in reviews) / len(reviews), 1)
+
+    @property
+    def review_count(self) -> int:
+        return len(getattr(self, "reviews", []))
+
+
 
 class Order(db.Model):
     __tablename__ = "orders"
@@ -132,9 +144,12 @@ class Order(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     order_number: Mapped[str] = mapped_column(String(40), unique=True, nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), index=True, nullable=False)
-    address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id", ondelete="RESTRICT"), index=True, nullable=False)
+    address_id: Mapped[int | None] = mapped_column(ForeignKey("addresses.id", ondelete="RESTRICT"), index=True, nullable=True)
     status: Mapped[OrderStatus] = mapped_column(Enum(OrderStatus), index=True, nullable=False)
+    delivery_method: Mapped[DeliveryMethod] = mapped_column(Enum(DeliveryMethod), default=DeliveryMethod.DELIVERY, nullable=False)
+    assembly_option: Mapped[AssemblyOption] = mapped_column(Enum(AssemblyOption), default=AssemblyOption.NOT_REQUIRED, nullable=False)
     shipping: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    assembly_cost: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0.00"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC))
 
     user: Mapped["User"] = relationship(back_populates="orders")
@@ -150,7 +165,7 @@ class Order(db.Model):
 
     @property
     def total(self) -> Decimal:
-        return self.subtotal + self.shipping
+        return self.subtotal + self.shipping + self.assembly_cost
 
 
 class OrderItem(db.Model):
@@ -168,3 +183,22 @@ class OrderItem(db.Model):
     @property
     def line_total(self) -> Decimal:
         return self.unit_price * self.quantity
+
+
+class Review(db.Model):
+    __tablename__ = "reviews"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"), index=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    rating: Mapped[int] = mapped_column(Integer, nullable=False)
+    comment: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC))
+
+    product: Mapped["Product"] = relationship(back_populates="reviews")
+    user: Mapped["User"] = relationship()
+
+
+# Add reviews relationship to Product
+Product.reviews = relationship("Review", back_populates="product", cascade="all, delete-orphan")
+

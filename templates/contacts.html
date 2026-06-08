@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Контакты · Музыкальный магазин{% endblock %}
+{% block content %}
+<section class="section page-section">
+  <div class="section-heading">
+    <p class="eyebrow">Свяжитесь с нами</p>
+    <h1>Контакты и информация</h1>
+  </div>
+
+  <div class="contacts-layout">
+    <div class="contacts-info">
+      <article class="info-card">
+        <h3>Наш адрес</h3>
+        <p>ул. Музыкальная, д. 15, оф. 101<br>Москва, 123456, Россия</p>
+      </article>
+
+      <article class="info-card">
+        <h3>Связаться с нами</h3>
+        <p><strong>Телефон:</strong> <a href="tel:+74951234567">+7 (495) 123-45-67</a></p>
+        <p><strong>Email:</strong> <a href="mailto:info@music-shop.local">info@music-shop.local</a></p>
+      </article>
+
+      <article class="info-card">
+        <h3>Часы работы</h3>
+        <p>Пн – Пт: 10:00 – 20:00</p>
+        <p>Сб – Вс: 11:00 – 18:00</p>
+      </article>
+
+      <article class="info-card">
+        <h3>Дополнительная информация</h3>
+        <p>Мы всегда рады помочь вам с выбором инструментов и оборудования. Наша команда экспертов готова ответить на любые ваши вопросы.</p>
+      </article>
+    </div>
+
+    <div class="contacts-map">
+      <div class="map-placeholder">
+        <p>Здесь могла бы быть ваша карта</p>
+        <img src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=900&q=80" alt="Магазин">
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.contacts-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-top: 2rem;
+}
+
+.contacts-info {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.info-card {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: var(--border);
+}
+
+.info-card h3 {
+  margin-bottom: 0.75rem;
+  font-family: var(--serif);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 1.25rem;
+}
+
+.info-card p {
+  color: var(--text);
+}
+
+.map-placeholder {
+  position: relative;
+  height: 100%;
+  min-height: 400px;
+  border: var(--border);
+  overflow: hidden;
+}
+
+.map-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.map-placeholder p {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1rem 2rem;
+  border: var(--border);
+  z-index: 1;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .contacts-layout {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}

@@ -42,21 +42,25 @@ def list_orders():
 
 
 def total_revenue():
+    # Sum up order totals. Since Order has shipping and assembly_cost,
+    # we need to join items and sum their line totals.
     order_totals = (
         select(
             (
                 Order.shipping
+                + Order.assembly_cost
                 + func.coalesce(func.sum(OrderItem.unit_price * OrderItem.quantity), 0)
             ).label("total")
         )
         .outerjoin(Order.items)
-        .group_by(Order.id)
+        .group_by(Order.id, Order.shipping, Order.assembly_cost)
         .subquery()
     )
 
     return db.session.scalar(
         select(func.coalesce(func.sum(order_totals.c.total), 0))
     )
+
 
 
 def get_order(order_id: int):

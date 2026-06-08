@@ -86,3 +86,10 @@ def delete_product(product_id: int):
     if product:
         db.session.delete(product)
         db.session.commit()
+
+def list_related_products(product: Product, limit: int = 4):
+    q = select(Product).where(
+        Product.category_id == product.category_id,
+        Product.id != product.id
+    ).limit(limit)
+    return db.session.scalars(q).all()

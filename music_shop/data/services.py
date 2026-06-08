@@ -17,7 +17,13 @@ from music_shop.data import repositories as repo
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 DEFAULT_IMAGE = "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=900&q=80"
 DEFAULT_DELIVERY_PRICE = Decimal("500.00")
-ROLE_LABELS = {"admin": "Администратор", "manager": "Менеджер", "viewer": "Наблюдатель"}
+DEFAULT_ASSEMBLY_PRICE = Decimal("1000.00")
+ROLE_LABELS = {
+    "admin": "Администратор",
+    "manager": "Менеджер",
+    "user": "Пользователь",
+    "guest": "Гость"
+}
 
 
 def slugify(value):
@@ -154,15 +160,37 @@ def delivery_price():
     return Decimal(repo.get_setting("delivery_price", str(DEFAULT_DELIVERY_PRICE)))
 
 
-def cart_totals(items=None):
+def assembly_price():
+    return Decimal(repo.get_setting("assembly_price", str(DEFAULT_ASSEMBLY_PRICE)))
+
+
+def cart_totals(items=None, delivery_method=None, assembly_option=None):
+    from .enums import DeliveryMethod, AssemblyOption
     items = cart_items() if items is None else items
     subtotal = sum((item["line_total"] for item in items), Decimal("0.00"))
-    shipping = delivery_price() if subtotal > 0 else Decimal("0.00")
-    return {"subtotal": subtotal, "shipping": shipping, "total": subtotal + shipping}
+    
+    shipping = Decimal("0.00")
+    if subtotal > 0 and (delivery_method is None or delivery_method == DeliveryMethod.DELIVERY):
+        shipping = delivery_price()
+        
+    assembly_cost = Decimal("0.00")
+    if subtotal > 0 and assembly_option == AssemblyOption.REQUIRED:
+        assembly_cost = assembly_price()
+        
+    return {
+        "subtotal": subtotal,
+        "shipping": shipping,
+        "assembly_cost": assembly_cost,
+        "total": subtotal + shipping + assembly_cost
+    }
 
 
 
-def validate_address_data(address_data):
+def validate_address_data(address_data, delivery_method):
+    from .enums import DeliveryMethod
+    if delivery_method == DeliveryMethod.PICKUP:
+        return {}
+        
     required_fields = ("country", "city", "street", "postal_code")
     if not isinstance(address_data, dict):
         raise ValueError("Некорректный формат адреса")
@@ -173,7 +201,8 @@ def validate_address_data(address_data):
     return cleaned
 
 
-def place_order(name, email, address_data, items=None):
+def place_order(name, email, address_data, delivery_method, assembly_option, items=None):
+    from .enums import DeliveryMethod, AssemblyOption
     items = cart_items() if items is None else items
 
     if not items:
@@ -183,19 +212,26 @@ def place_order(name, email, address_data, items=None):
     if not user:
         raise ValueError("Пользователь не найден")
 
-    address_data = validate_address_data(address_data)
+    address_data = validate_address_data(address_data, delivery_method)
+    totals = cart_totals(items, delivery_method, assembly_option)
 
     try:
-        address = Address(user_id=user.id, **address_data)
-        db.session.add(address)
-        db.session.flush()
+        address_id = None
+        if delivery_method == DeliveryMethod.DELIVERY:
+            address = Address(user_id=user.id, **address_data)
+            db.session.add(address)
+            db.session.flush()
+            address_id = address.id
 
         order = Order(
             order_number=f"ORD-{uuid.uuid4().hex[:10].upper()}",
             user_id=user.id,
-            address_id=address.id,
-            status=OrderStatus.CREATED,
-            shipping=Decimal(str(cart_totals(items)["shipping"])),
+            address_id=address_id,
+            status=OrderStatus.NEW,
+            delivery_method=delivery_method,
+            assembly_option=assembly_option,
+            shipping=totals["shipping"],
+            assembly_cost=totals["assembly_cost"],
         )
 
         db.session.add(order)
@@ -307,16 +343,26 @@ def current_user():
     return repo.get_user(user_id) if user_id else None
 
 
-def admin_required(view):
-    @wraps(view)
-    def wrapped(*args, **kwargs):
-        user = current_user()
-        if not user:
-            flash("Войдите как администратор, чтобы открыть панель управления.", "error")
-            return redirect(url_for("ui.login"))
-        if not user.is_admin:
-            flash("У вас нет прав администратора для управления товарами и ролями.", "error")
-            return redirect(url_for("ui.home"))
-        return view(*args, **kwargs)
+def role_required(*roles):
+    def decorator(view):
+        @wraps(view)
+        def wrapped(*args, **kwargs):
+            user = current_user()
+            if not user:
+                flash("Пожалуйста, войдите в систему.", "error")
+                return redirect(url_for("ui.login"))
+            if user.role not in roles and user.role != "admin":
+                flash("У вас нет прав для доступа к этой странице.", "error")
+                return redirect(url_for("ui.home"))
+            return view(*args, **kwargs)
+        return wrapped
+    return decorator
 
-    return wrapped
+
+def admin_required(view):
+    return role_required("admin")(view)
+
+
+def manager_required(view):
+    return role_required("manager", "admin")(view)
+

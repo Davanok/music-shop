@@ -1096,3 +1096,193 @@ input:focus, select:focus, textarea:focus {
     .panel-header { align-items: start; flex-direction: column }
     .entry-title-cell { min-width: 180px }
 }
+
+/* ─── CHECKOUT RADIO GROUPS ───────────────────────────── */
+
+.field-group {
+    margin-bottom: 1.5rem;
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.radio-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+/* Radio options moved to form-section section below */
+
+.radio-option input[type="radio"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--ink);
+}
+
+.radio-option span {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: var(--border);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 1rem;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: var(--border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg);
+}
+
+.radio-option:hover {
+    border-color: var(--ink);
+    background: var(--surface);
+}
+
+.radio-option.active {
+    border-color: var(--ink);
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--ink);
+}
+
+.radio-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.radio-content strong {
+    font-size: 0.95rem;
+}
+
+.radio-content span {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.checkout-footer {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.button.large {
+    width: 100%;
+    padding: 1.25rem;
+    font-size: 1.1rem;
+}
+
+.terms {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+
+/* Ratings and Stars */
+.stars {
+    color: #ffc107;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+}
+
+.product-card-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+}
+
+.product-card-rating .stars {
+    font-size: 0.85rem;
+}
+
+.product-card-rating .count {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.review-stars {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.review-stars .stars {
+    font-size: 1rem;
+}
+
+.review-form .rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.review-form .rating-input input {
+    display: none;
+}
+
+.review-form .rating-input label {
+    font-size: 1.5rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.review-form .rating-input label:hover,
+.review-form .rating-input label:hover ~ label,
+.review-form .rating-input input:checked ~ label {
+    color: #ffc107;
+}
+
+.review-details {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.review-details .field-label {
+    margin-bottom: 0;
+    color: var(--muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.review-comment-text {
+    background: var(--bg);
+    padding: 1rem;
+    border-radius: 4px;
+    font-style: italic;
+}

@@ -12,6 +12,7 @@
       <a class="brand" href="{{ url_for('shop.home') }}"><span class="brand-mark">♪</span><span>Музыкальный магазин</span></a>
       <nav class="main-nav" aria-label="Основная навигация">
         <a href="{{ url_for('shop.catalog') }}">Каталог</a>
+        <a href="{{ url_for('shop.contacts') }}">Контакты</a>
         <a href="{{ url_for('account.index') }}">Мой аккаунт</a>
         {% if current_user %}
           {% if current_user.is_admin %}<a href="{{ url_for('admin.dashboard.index') }}">Администрирование</a>{% endif %}
@@ -32,5 +33,48 @@
       {% endwith %}
       {% block content %}{% endblock %}
     </main>
+    <footer class="site-footer">
+      <div class="footer-content">
+        <div class="footer-links">
+          <a href="{{ url_for('shop.home') }}">Главная</a>
+          <a href="{{ url_for('shop.catalog') }}">Каталог</a>
+          <a href="{{ url_for('shop.contacts') }}">Контакты</a>
+          <a href="{{ url_for('account.index') }}">Аккаунт</a>
+        </div>
+        <p>&copy; 2026 Музыкальный магазин Manus. Все права защищены.</p>
+      </div>
+    </footer>
+    <style>
+      .site-footer {
+        margin-top: 4rem;
+        padding: 3rem 0;
+        border-top: var(--border);
+        background: var(--surface-dark);
+        color: var(--bg);
+      }
+      .footer-content {
+        width: min(1180px, calc(100% - 2rem));
+        margin: 0 auto;
+        text-align: center;
+      }
+      .footer-links {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .footer-links a:hover {
+        color: var(--accent);
+      }
+      .footer-content p {
+        font-size: 0.75rem;
+        color: #a8a29e;
+        letter-spacing: 0.02em;
+      }
+    </style>
   </body>
 </html>

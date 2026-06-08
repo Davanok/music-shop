@@ -2,13 +2,13 @@ from flask import flash, redirect, request, url_for, Blueprint
 
 from music_shop.data import repositories as repo
 from music_shop.data.enums import OrderStatus
-from music_shop.data.services import admin_required
+from music_shop.data.services import manager_required
 
 bp = Blueprint("orders", __name__, url_prefix="/orders")
 
 
 @bp.post("/<int:order_id>/status")
-@admin_required
+@manager_required
 def update_status(order_id):
     status_value = request.form.get("status")
     try:

@@ -4,6 +4,14 @@
   <div>
     <p class="category-label">{{ product.category.name }}</p>
     <h3>{{ product.name }}</h3>
+    <div class="product-card-rating">
+      <span class="stars">
+        {% for i in range(5) %}
+          {% if i < product.average_rating|int %}★{% else %}☆{% endif %}
+        {% endfor %}
+      </span>
+      <span class="count">({{ product.review_count }})</span>
+    </div>
     <p>{{ product.description }}</p>
     <span class="stock {{ 'in' if product.stock > 0 else 'out' }}">
       {{ product.stock ~ ' в наличии' if product.stock > 0 else 'Нет в наличии' }}

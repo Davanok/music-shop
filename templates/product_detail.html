@@ -3,6 +3,182 @@
 {% block content %}
 <section class="detail-layout">
   <div class="gallery">{% for image in gallery %}<img src="{{ image }}" alt="Изображение товара {{ product.name }}">{% endfor %}</div>
-  <div class="detail-panel"><p class="category-label">{{ product.category.name }}</p><h1>{{ product.name }}</h1><p class="detail-price">{{ product.price|currency }}</p><span class="stock {{ 'in' if product.stock > 0 else 'out' }}">{{ product.stock ~ ' доступно' if product.stock > 0 else 'Сейчас нет в наличии' }}</span><p>{{ product.description }}</p><form class="add-to-cart-form" method="post" action="{{ url_for('cart.add_item', product_id=product.id) }}" data-product-id="{{ product.id }}"><label class="field compact">Количество<input name="quantity" type="number" min="1" max="{{ product.stock if product.stock > 0 else 1 }}" value="1"></label><button class="button primary" {% if product.stock < 1 %}disabled{% endif %}>Добавить в корзину</button></form><a href="{{ url_for('shop.home') }}#catalog">Вернуться в каталог</a></div>
+  <div class="detail-panel">
+    <p class="category-label">{{ product.category.name }}</p>
+    <h1>{{ product.name }}</h1>
+    <p class="detail-price">{{ product.price|currency }}</p>
+    <div class="rating-summary-inline">
+      <span class="stars">
+        {% for i in range(5) %}
+          {% if i < product.average_rating|int %}★{% else %}☆{% endif %}
+        {% endfor %}
+      </span>
+      <span class="review-count">({{ reviews|length }} отзывов)</span>
+    </div>
+    <span class="stock {{ 'in' if product.stock > 0 else 'out' }}">{{ product.stock ~ ' доступно' if product.stock > 0 else 'Сейчас нет в наличии' }}</span>
+    <p>{{ product.description }}</p>
+    <form class="add-to-cart-form" method="post" action="{{ url_for('cart.add_item', product_id=product.id) }}" data-product-id="{{ product.id }}">
+      <label class="field compact">Количество<input name="quantity" type="number" min="1" max="{{ product.stock if product.stock > 0 else 1 }}" value="1"></label>
+      <button class="button primary" {% if product.stock < 1 %}disabled{% endif %}>Добавить в корзину</button>
+    </form>
+    <a href="{{ url_for('shop.catalog') }}">Вернуться в каталог</a>
+  </div>
 </section>
+
+<!-- Reviews Section -->
+<section class="section">
+  <div class="section-heading">
+    <p class="eyebrow">Отзывы</p>
+    <h2>Отзывы покупателей</h2>
+  </div>
+
+  <div class="reviews-layout">
+    <div class="reviews-list">
+      {% if reviews %}
+        {% for review in reviews %}
+          <article class="review-card">
+            <div class="review-header">
+              <strong>{{ review.user.name }}</strong>
+              <span class="review-date">{{ review.created_at.strftime('%d.%m.%Y') }}</span>
+              <div class="review-rating">
+                {% for i in range(5) %}
+                  {% if i < review.rating %}★{% else %}☆{% endif %}
+                {% endfor %}
+              </div>
+            </div>
+            <p class="review-comment">{{ review.comment }}</p>
+          </article>
+        {% endfor %}
+      {% else %}
+        <p class="no-reviews">Пока нет отзывов об этом товаре. Будьте первым!</p>
+      {% endif %}
+    </div>
+
+    <div class="review-form-container">
+      {% if user %}
+        <form method="post" class="form-card">
+          <h3>Оставить отзыв</h3>
+          <label class="field">Оценка
+            <select name="rating">
+              <option value="5">5 звезд</option>
+              <option value="4">4 звезды</option>
+              <option value="3">3 звезды</option>
+              <option value="2">2 звезды</option>
+              <option value="1">1 звезда</option>
+            </select>
+          </label>
+          <label class="field">Комментарий
+            <textarea name="comment" rows="4" required placeholder="Поделитесь вашим мнением о товаре..."></textarea>
+          </label>
+          <button class="button primary">Отправить отзыв</button>
+        </form>
+      {% else %}
+        <div class="login-prompt-card">
+          <p>Чтобы оставить отзыв, пожалуйста, <a href="{{ url_for('auth.login') }}">войдите в систему</a>.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Related Products Section -->
+{% if related_products %}
+<section class="section">
+  <div class="section-heading">
+    <p class="eyebrow">Рекомендации</p>
+    <h2>Похожие товары</h2>
+  </div>
+  <div class="product-grid">
+    {% for rel_product in related_products %}
+      {% with product = rel_product %}
+        {% include "partials/product_card.html" %}
+      {% endwith %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<style>
+.rating-summary-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stars {
+  color: var(--accent);
+  font-size: 1.1rem;
+}
+
+.review-count {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.reviews-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 2rem;
+}
+
+.review-card {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: var(--border);
+  margin-bottom: 1rem;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.review-date {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.review-rating {
+  color: var(--accent);
+  margin-left: auto;
+}
+
+.review-comment {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.no-reviews {
+  color: var(--muted);
+  font-style: italic;
+  padding: 2rem;
+  background: var(--surface);
+  border: var(--border);
+  text-align: center;
+}
+
+.review-form-container h3 {
+  margin-bottom: 1rem;
+  font-family: var(--serif);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 1.5rem;
+}
+
+.login-prompt-card {
+  padding: 2rem;
+  background: var(--surface);
+  border: var(--border);
+  text-align: center;
+}
+
+.login-prompt-card a {
+  font-weight: 700;
+  text-decoration: underline;
+  color: var(--accent);
+}
+</style>
 {% endblock %}

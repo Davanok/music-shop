@@ -86,10 +86,14 @@ def seed_data():
         product.gallery_json = json.dumps([image_url])
         db.session.add(product)
 
-    # ── 3. Settings & admin user (unchanged) ──────────────────────────────────
-    setting = AppSetting.query.filter_by(key="delivery_price").one_or_none() or AppSetting(key="delivery_price")
-    setting.value = "500.00"
-    db.session.add(setting)
+    # ── 3. Settings & admin user ──────────────────────────────────────────────
+    delivery_setting = AppSetting.query.filter_by(key="delivery_price").one_or_none() or AppSetting(key="delivery_price")
+    delivery_setting.value = "500.00"
+    db.session.add(delivery_setting)
+
+    assembly_setting = AppSetting.query.filter_by(key="assembly_price").one_or_none() or AppSetting(key="assembly_price")
+    assembly_setting.value = "1000.00"
+    db.session.add(assembly_setting)
 
     if not User.query.filter_by(email="admin@music-shop.local").one_or_none():
         db.session.add(User(
@@ -97,6 +101,22 @@ def seed_data():
             name="Главный администратор",
             password_hash=hash_password("admin12345"),
             role="admin",
+        ))
+
+    if not User.query.filter_by(email="manager@music-shop.local").one_or_none():
+        db.session.add(User(
+            email="manager@music-shop.local",
+            name="Менеджер магазина",
+            password_hash=hash_password("manager12345"),
+            role="manager",
+        ))
+
+    if not User.query.filter_by(email="user@music-shop.local").one_or_none():
+        db.session.add(User(
+            email="user@music-shop.local",
+            name="Обычный пользователь",
+            password_hash=hash_password("user12345"),
+            role="user",
         ))
 
     db.session.commit()

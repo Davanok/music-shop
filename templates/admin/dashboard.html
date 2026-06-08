@@ -3,13 +3,15 @@
 {% block title %}Администрирование · Музыкальный магазин{% endblock %}
 
 {% block content %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 
 {% set active_section = active_section|default('products') %}
 {% set section_titles = {
     'products': 'Товары',
     'categories': 'Категории',
     'users': 'Пользователи',
-    'orders': 'Заказы'
+    'orders': 'Заказы',
+    'reviews': 'Отзывы'
 } %}
 
 <section class="section page-section admin-page">
@@ -44,21 +46,27 @@
         <aside class="admin-rail" aria-label="Разделы управления">
             <p class="admin-rail-title">Управление</p>
             <nav class="admin-section-nav">
-                <a class="admin-section-link {% if active_section == 'products' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='products') }}">
+                <a class="admin-section-link {% if active_section == 'products' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='products') }}" data-spa-link>
                     <span>Товары</span>
                     <strong>{{ products|length }}</strong>
                 </a>
-                <a class="admin-section-link {% if active_section == 'categories' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='categories') }}">
+                <a class="admin-section-link {% if active_section == 'categories' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='categories') }}" data-spa-link>
                     <span>Категории</span>
                     <strong>{{ categories|length }}</strong>
                 </a>
-                <a class="admin-section-link {% if active_section == 'users' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='users') }}">
+                {% if current_user.role == 'admin' %}
+                <a class="admin-section-link {% if active_section == 'users' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='users') }}" data-spa-link>
                     <span>Пользователи</span>
                     <strong>{{ users|length }}</strong>
                 </a>
-                <a class="admin-section-link {% if active_section == 'orders' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='orders') }}">
+                {% endif %}
+                <a class="admin-section-link {% if active_section == 'orders' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='orders') }}" data-spa-link>
                     <span>Заказы</span>
                     <strong>{{ orders|length }}</strong>
+                </a>
+                <a class="admin-section-link {% if active_section == 'reviews' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='reviews') }}" data-spa-link>
+                    <span>Отзывы</span>
+                    <strong>{{ reviews|length }}</strong>
                 </a>
             </nav>
         </aside>
@@ -96,7 +104,7 @@
                 <tbody>
                 {% for product in products %}
                 <tr class="product-row {% if selected_product and selected_product.id == product.id %}selected{% endif %}"
-                    data-href="{{ url_for('admin.dashboard.index', section='products', entry_id=product.id) }}">
+                    data-href="{{ url_for('admin.dashboard.index', section='products', entry_id=product.id) }}" data-spa-row>
                     <td>
                         <div class="entry-title-cell">
                             <img src="{{ product.image_url }}" alt="{{ product.name }}" class="table-thumb">
@@ -136,7 +144,7 @@
                 <tbody>
                 {% for category in categories %}
                 <tr class="{% if selected_category and selected_category.id == category.id %}selected{% endif %}"
-                    data-href="{{ url_for('admin.dashboard.index', section='categories', entry_id=category.id) }}">
+                    data-href="{{ url_for('admin.dashboard.index', section='categories', entry_id=category.id) }}" data-spa-row>
                     <td>
                         <div class="entry-title-cell">
                             <img src="{{ category.image_url }}" alt="{{ category.name }}" class="table-thumb">
@@ -167,12 +175,47 @@
                 <tbody>
                 {% for user in users %}
                 <tr class="{% if selected_user and selected_user.id == user.id %}selected{% endif %}"
-                    data-href="{{ url_for('admin.dashboard.index', section='users', entry_id=user.id) }}">
+                    data-href="{{ url_for('admin.dashboard.index', section='users', entry_id=user.id) }}" data-spa-row>
                     <td>
                         <strong>{{ user.name }}</strong>
                         <div class="product-meta">{{ user.email }}</div>
                     </td>
                     <td>{{ role_labels.get(user.role, user.role) }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            {% elif active_section == 'reviews' %}
+            <table class="admin-table compact-admin-table reviews-table">
+                <colgroup>
+                    <col style="width:30%">
+                    <col style="width:30%">
+                    <col style="width:20%">
+                    <col style="width:20%">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>Товар</th>
+                    <th>Клиент</th>
+                    <th>Рейтинг</th>
+                    <th>Дата</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for review in reviews %}
+                <tr class="{% if selected_review and selected_review.id == review.id %}selected{% endif %}"
+                    data-href="{{ url_for('admin.dashboard.index', section='reviews', entry_id=review.id) }}" data-spa-row>
+                    <td>{{ review.product.name }}</td>
+                    <td>{{ review.user.name }}</td>
+                    <td>
+                        <span class="stars">
+                            {% for i in range(5) %}
+                                {% if i < review.rating %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                        </span>
+                    </td>
+                    <td>{{ review.created_at.strftime('%d.%m.%Y') }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -196,7 +239,7 @@
                 <tbody>
                 {% for order in orders %}
                 <tr class="{% if selected_order and selected_order.id == order.id %}selected{% endif %}"
-                    data-href="{{ url_for('admin.dashboard.index', section='orders', entry_id=order.id) }}">
+                    data-href="{{ url_for('admin.dashboard.index', section='orders', entry_id=order.id) }}" data-spa-row>
                     <td>
                         <strong>{{ order.order_number }}</strong>
                         <div class="product-meta">{{ order.created_at.strftime('%d.%m.%Y') }}</div>
@@ -287,6 +330,39 @@
                 {% for item in selected_order.items %}
                 <div class="order-line"><span>{{ item.product.name }} × {{ item.quantity }}</span><strong>{{ item.line_total|currency }}</strong></div>
                 {% endfor %}
+            </div>
+
+            {% elif active_section == 'reviews' and selected_review %}
+            <div class="panel-header">
+                <h2>Модерация отзыва</h2>
+            </div>
+            <div class="form-card embedded-admin-form">
+                <div class="review-details">
+                    <p class="field-label">Товар</p>
+                    <p>{{ selected_review.product.name }}</p>
+                    
+                    <p class="field-label">Автор</p>
+                    <p>{{ selected_review.user.name }} ({{ selected_review.user.email }})</p>
+                    
+                    <p class="field-label">Рейтинг</p>
+                    <div class="stars">
+                        {% for i in range(5) %}
+                            {% if i < selected_review.rating %}★{% else %}☆{% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <p class="field-label">Комментарий</p>
+                    <p class="review-comment-text">{{ selected_review.comment }}</p>
+                    
+                    <p class="field-label">Дата</p>
+                    <p>{{ selected_review.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                </div>
+                
+                <div class="delete-form-row">
+                    <form method="post" action="{{ url_for('admin.dashboard.delete_review', review_id=selected_review.id) }}" onsubmit="return confirm('Удалить этот отзыв?')">
+                        <button class="danger">Удалить отзыв</button>
+                    </form>
+                </div>
             </div>
 
             {% else %}

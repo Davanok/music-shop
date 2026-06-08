@@ -5,10 +5,207 @@
   <div class="section-heading"><p class="eyebrow">Мой аккаунт</p><h1>История заказов</h1></div>
   <div class="orders-list">
     {% for order in orders %}
-      <article class="order-card"><div><p class="category-label">{{ order.status }}</p><h2>{{ order.order_number }}</h2><p>{{ order.created_at }}</p><p>{{ order.user.name }}</p></div><strong>{{ order.total|currency }}</strong></article>
+      <article class="order-card-detailed">
+        <header class="order-header">
+          <div class="order-meta">
+            <span class="order-number">Заказ #{{ order.order_number }}</span>
+            <span class="order-date">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+          </div>
+          <div class="order-status-badge status-{{ order.status.lower() }}">
+            {{ order.status }}
+          </div>
+        </header>
+        
+        <div class="order-body">
+          <div class="order-items-detailed">
+            <h4>Товары в заказе</h4>
+            {% for item in order.items %}
+              <div class="order-item-row">
+                <span class="item-name">{{ item.product.name }}</span>
+                <span class="item-qty">{{ item.quantity }} шт.</span>
+                <span class="item-price">{{ item.unit_price|currency }}</span>
+                <span class="item-total">{{ item.line_total|currency }}</span>
+              </div>
+            {% endfor %}
+          </div>
+          
+          <div class="order-details-grid">
+            <div class="detail-group">
+              <h4>Способ получения</h4>
+              <p>{{ "Доставка курьером" if order.delivery_method == "DELIVERY" else "Самовывоз" }}</p>
+              {% if order.delivery_method == "DELIVERY" and order.address %}
+                <p class="address-detail">
+                  {{ order.address.postal_code }}, {{ order.address.country }}, {{ order.address.city }}, {{ order.address.street }}
+                </p>
+              {% endif %}
+            </div>
+            
+            <div class="detail-group">
+              <h4>Дополнительно</h4>
+              <p>Сборка: {{ "Требуется" if order.assembly_option == "REQUIRED" else "Не требуется" }}</p>
+            </div>
+            
+            <div class="order-summary-detailed">
+              <div class="summary-line">
+                <span>Товары:</span>
+                <span>{{ order.subtotal|currency }}</span>
+              </div>
+              <div class="summary-line">
+                <span>Доставка:</span>
+                <span>{{ order.shipping|currency }}</span>
+              </div>
+              {% if order.assembly_cost > 0 %}
+                <div class="summary-line">
+                  <span>Сборка:</span>
+                  <span>{{ order.assembly_cost|currency }}</span>
+                </div>
+              {% endif %}
+              <div class="summary-line total">
+                <span>Итого:</span>
+                <span>{{ order.total|currency }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
     {% else %}
-      <p class="empty-state">У вас пока нет заказов.</p>
+      <p class="no-orders">У вас пока нет заказов.</p>
     {% endfor %}
   </div>
+
+<style>
+.order-card-detailed {
+  background: var(--surface);
+  border: var(--border);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: var(--bg);
+  border-bottom: var(--border);
+}
+
+.order-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-number {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.order-date {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.order-status-badge {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--ink);
+}
+
+.status-new { background: #e0f2fe; color: #0369a1; }
+.status-processing { background: #fef9c3; color: #854d0e; }
+.status-shipped { background: #f0fdf4; color: #166534; }
+.status-completed { background: #dcfce7; color: #166534; border-color: #166534; }
+.status-cancelled { background: #fee2e2; color: #991b1b; }
+
+.order-body {
+  padding: 1.5rem;
+}
+
+.order-items-detailed h4, .detail-group h4 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--bg);
+  padding-bottom: 0.25rem;
+}
+
+.order-item-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 100px 100px;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--bg);
+  font-size: 0.9rem;
+}
+
+.order-item-row:last-child {
+  border-bottom: none;
+}
+
+.item-qty, .item-price, .item-total {
+  text-align: right;
+  font-family: var(--mono);
+}
+
+.order-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: var(--border);
+}
+
+.address-detail {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+.order-summary-detailed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.summary-line.total {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--ink);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.no-orders {
+  text-align: center;
+  padding: 3rem;
+  background: var(--surface);
+  border: var(--border);
+  color: var(--muted);
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .order-item-row {
+    grid-template-columns: 1fr auto;
+  }
+  .item-price, .item-qty { display: none; }
+  .order-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
 </section>
 {% endblock %}
