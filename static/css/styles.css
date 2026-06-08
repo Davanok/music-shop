@@ -382,7 +382,7 @@ input:focus, select:focus, textarea:focus {
 
 .detail-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, .8fr);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, .8fr);
     gap: 3rem;
     padding: 3rem 0
 }
@@ -396,6 +396,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 .detail-panel {
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
     display: grid;
     gap: 1rem;
     align-content: start;
