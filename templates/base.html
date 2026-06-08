@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Музыкальный магазин{% endblock %}</title>
+    <title>{% block title %}MuzLove{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
     <script src="{{ url_for('static', filename='js/cart.js') }}" defer></script>
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="{{ url_for('shop.home') }}"><span class="brand-mark">♪</span><span>Музыкальный магазин</span></a>
+      <a class="brand" href="{{ url_for('shop.home') }}"><span class="brand-mark">♪</span><span>MuzLove</span></a>
       <nav class="main-nav" aria-label="Основная навигация">
         <a href="{{ url_for('shop.catalog') }}">Каталог</a>
         <a href="{{ url_for('shop.contacts') }}">Контакты</a>
@@ -41,7 +41,7 @@
           <a href="{{ url_for('shop.contacts') }}">Контакты</a>
           <a href="{{ url_for('account.index') }}">Аккаунт</a>
         </div>
-        <p>&copy; 2026 Музыкальный магазин Manus. Все права защищены.</p>
+        <p>&copy; 2026 Музыкальный магазин MuzLove. Все права защищены.</p>
       </div>
     </footer>
     <style>
