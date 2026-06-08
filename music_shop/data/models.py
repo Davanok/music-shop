@@ -124,7 +124,7 @@ class Product(db.Model):
 
     category: Mapped["Category"] = relationship(back_populates="products")
     order_items: Mapped[list["OrderItem"]] = relationship(back_populates="product")
-    reviews: Mapped["Review"] = relationship(back_populates="product", cascade="all, delete-orphan")
+    reviews: Mapped[list["Review"]] = relationship(back_populates="product", cascade="all, delete-orphan")
 
     @property
     def average_rating(self) -> float:
