@@ -382,7 +382,7 @@ input:focus, select:focus, textarea:focus {
 
 .detail-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, .8fr);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, .8fr);
     gap: 3rem;
     padding: 3rem 0
 }
@@ -396,6 +396,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 .detail-panel {
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
     display: grid;
     gap: 1rem;
     align-content: start;
@@ -530,7 +533,7 @@ input:focus, select:focus, textarea:focus {
     border-bottom: var(--border)
 }
 
-.admin-panel { padding: 1.5rem; overflow-x: auto }
+.admin-panel { padding: 1.5rem; overflow-x: auto; }
 
 .category-manager {
     display: grid;
@@ -735,8 +738,9 @@ input:focus, select:focus, textarea:focus {
 .admin-form-panel {
     position: sticky;
     top: 70px;
-    overflow: visible;
-    max-height: none;
+    overflow: auto;
+    max-height: calc(100vh - 110px);
+    box-sizing: border-box;
 }
 
 
@@ -752,8 +756,9 @@ input:focus, select:focus, textarea:focus {
     background: transparent;
     border: 0;
     box-shadow: none;
-    overflow: visible;
-    max-height: none;
+    overflow: auto;
+    max-height: calc(100vh - 110px);
+    box-sizing: border-box;
 }
 
 .order-detail-card { display: grid; gap: .75rem }
