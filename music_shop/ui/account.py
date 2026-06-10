@@ -15,7 +15,7 @@ def index():
         return redirect(url_for("auth.login"))
     orders = repo.list_orders_for_email(user.email)
     return render_template(
-        "account.html",
+        "account/account.html",
         orders=orders,
         user=user,
         errors={}
@@ -75,7 +75,7 @@ def profile():
 
     orders = repo.list_orders_for_email(user.email)
     return render_template(
-        "account_profile.html",
+        "account/account_profile.html",
         orders=orders,
         user=user,
         errors=errors
