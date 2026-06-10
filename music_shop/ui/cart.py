@@ -7,7 +7,7 @@ from music_shop.data.services import (
     cart_totals,
     current_user,
     place_order,
-    update_cart,
+    update_cart, delivery_price, assembly_price,
 )
 from music_shop.data.enums import DeliveryMethod, AssemblyOption
 
@@ -85,6 +85,8 @@ def checkout():
         assembly_options=AssemblyOption,
         selected_delivery=delivery_method,
         selected_assembly=assembly_option,
+        shipping_cost=delivery_price(),
+        assembly_cost=assembly_price()
     )
 
 

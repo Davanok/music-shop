@@ -16,7 +16,7 @@
                         'checked' if selected_delivery == delivery_methods.DELIVERY }} onchange="this.form.submit()">
                         <div class="radio-content">
                             <strong>Доставка курьером</strong>
-                            <span>+{{ totals.shipping|currency }}</span>
+                            <span>+{{ shipping_cost|currency }}</span>
                         </div>
                     </label>
                     <label class="radio-option {{ 'active' if selected_delivery == delivery_methods.PICKUP }}">
@@ -38,7 +38,7 @@
                         'checked' if selected_assembly == assembly_options.REQUIRED }} onchange="this.form.submit()">
                         <div class="radio-content">
                             <strong>Сборка инструмента</strong>
-                            <span>+{{ totals.assembly_cost|currency }}</span>
+                            <span>+{{ assembly_cost|currency }}</span>
                         </div>
                     </label>
                     <label class="radio-option {{ 'active' if selected_assembly == assembly_options.NOT_REQUIRED }}">
