@@ -127,7 +127,7 @@ button, input, select, textarea { font: inherit; cursor: pointer }
 /* ─── HERO ────────────────────────────────────────────── */
 
 .hero-copy {
-    padding: 0 3rem 3rem 0;
+    padding: 3rem;
     border-right: var(--border)
 }
 
@@ -207,7 +207,7 @@ p {
     font-size: 2rem;
     font-weight: 400;
     line-height: 1.05;
-    color: var(--bg);
+    color: var(--border);
     margin-bottom: 1rem
 }
 

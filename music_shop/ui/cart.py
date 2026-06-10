@@ -44,7 +44,7 @@ def checkout():
     if not items:
         flash("Ваша корзина пуста.", "error")
         return redirect(url_for("cart.cart"))
-    
+
     user = current_user()
     if not user:
         flash("Войдите, чтобы оформить заказ.", "error")
@@ -54,7 +54,7 @@ def checkout():
     assembly_option = request.form.get("assembly_option", AssemblyOption.NOT_REQUIRED)
     totals = cart_totals(items, delivery_method, assembly_option)
 
-    if request.method == "POST":
+    if request.method == "POST" and request.form.get("intent") == "place_order":
         try:
             order = place_order(
                 user.name,
@@ -72,18 +72,19 @@ def checkout():
         except ValueError as error:
             flash(str(error), "error")
             return redirect(url_for("cart.checkout"))
+
         flash("Заказ успешно оформлен.", "success")
         return redirect(url_for("cart.confirmation", order_number=order.order_number))
-    
+
     return render_template(
-        "checkout.html", 
-        items=items, 
-        totals=totals, 
+        "checkout.html",
+        items=items,
+        totals=totals,
         user=user,
         delivery_methods=DeliveryMethod,
         assembly_options=AssemblyOption,
         selected_delivery=delivery_method,
-        selected_assembly=assembly_option
+        selected_assembly=assembly_option,
     )
 
 

@@ -2,89 +2,95 @@
 {% block title %}Оформление заказа · MuzLove{% endblock %}
 {% block content %}
 <section class="section page-section">
-  <div class="section-heading">
-    <p class="eyebrow">Оформление заказа</p>
-    <h1>Данные для доставки</h1>
-  </div>
-  <div class="checkout-layout">
-    <form method="post" class="form-card" id="checkout-form">
-      <div class="form-section">
-        <h3>1. Способ получения</h3>
-        <div class="radio-group">
-          <label class="radio-option {{ 'active' if selected_delivery == delivery_methods.DELIVERY }}">
-            <input type="radio" name="delivery_method" value="{{ delivery_methods.DELIVERY.name }}" {{ 'checked' if selected_delivery == delivery_methods.DELIVERY }} onchange="this.form.submit()">
-            <div class="radio-content">
-              <strong>Доставка курьером</strong>
-              <span>+{{ totals.shipping|currency }}</span>
+    <div class="section-heading">
+        <p class="eyebrow">Оформление заказа</p>
+        <h1>Данные для доставки</h1>
+    </div>
+    <div class="checkout-layout">
+        <form method="post" class="form-card" id="checkout-form">
+            <div class="form-section">
+                <h3>1. Способ получения</h3>
+                <div class="radio-group">
+                    <label class="radio-option {{ 'active' if selected_delivery == delivery_methods.DELIVERY }}">
+                        <input type="radio" name="delivery_method" value="{{ delivery_methods.DELIVERY.name }}" {{
+                        'checked' if selected_delivery == delivery_methods.DELIVERY }} onchange="this.form.submit()">
+                        <div class="radio-content">
+                            <strong>Доставка курьером</strong>
+                            <span>+{{ totals.shipping|currency }}</span>
+                        </div>
+                    </label>
+                    <label class="radio-option {{ 'active' if selected_delivery == delivery_methods.PICKUP }}">
+                        <input type="radio" name="delivery_method" value="{{ delivery_methods.PICKUP.name }}" {{
+                        'checked' if selected_delivery == delivery_methods.PICKUP }} onchange="this.form.submit()">
+                        <div class="radio-content">
+                            <strong>Самовывоз</strong>
+                            <span>Бесплатно</span>
+                        </div>
+                    </label>
+                </div>
             </div>
-          </label>
-          <label class="radio-option {{ 'active' if selected_delivery == delivery_methods.PICKUP }}">
-            <input type="radio" name="delivery_method" value="{{ delivery_methods.PICKUP.name }}" {{ 'checked' if selected_delivery == delivery_methods.PICKUP }} onchange="this.form.submit()">
-            <div class="radio-content">
-              <strong>Самовывоз</strong>
-              <span>Бесплатно</span>
-            </div>
-          </label>
-        </div>
-      </div>
 
-      <div class="form-section">
-        <h3>2. Дополнительные услуги</h3>
-        <div class="radio-group">
-          <label class="radio-option {{ 'active' if selected_assembly == assembly_options.REQUIRED }}">
-            <input type="radio" name="assembly_option" value="{{ assembly_options.REQUIRED.name }}" {{ 'checked' if selected_assembly == assembly_options.REQUIRED }} onchange="this.form.submit()">
-            <div class="radio-content">
-              <strong>Сборка инструмента</strong>
-              <span>+{{ totals.assembly_cost|currency }}</span>
+            <div class="form-section">
+                <h3>2. Дополнительные услуги</h3>
+                <div class="radio-group">
+                    <label class="radio-option {{ 'active' if selected_assembly == assembly_options.REQUIRED }}">
+                        <input type="radio" name="assembly_option" value="{{ assembly_options.REQUIRED.name }}" {{
+                        'checked' if selected_assembly == assembly_options.REQUIRED }} onchange="this.form.submit()">
+                        <div class="radio-content">
+                            <strong>Сборка инструмента</strong>
+                            <span>+{{ totals.assembly_cost|currency }}</span>
+                        </div>
+                    </label>
+                    <label class="radio-option {{ 'active' if selected_assembly == assembly_options.NOT_REQUIRED }}">
+                        <input type="radio" name="assembly_option" value="{{ assembly_options.NOT_REQUIRED.name }}" {{
+                        'checked' if selected_assembly == assembly_options.NOT_REQUIRED }}
+                        onchange="this.form.submit()">
+                        <div class="radio-content">
+                            <strong>Без сборки</strong>
+                            <span>Бесплатно</span>
+                        </div>
+                    </label>
+                </div>
             </div>
-          </label>
-          <label class="radio-option {{ 'active' if selected_assembly == assembly_options.NOT_REQUIRED }}">
-            <input type="radio" name="assembly_option" value="{{ assembly_options.NOT_REQUIRED.name }}" {{ 'checked' if selected_assembly == assembly_options.NOT_REQUIRED }} onchange="this.form.submit()">
-            <div class="radio-content">
-              <strong>Без сборки</strong>
-              <span>Бесплатно</span>
-            </div>
-          </label>
-        </div>
-      </div>
 
-      {% if selected_delivery == delivery_methods.DELIVERY %}
-      <div class="form-section">
-        <h3>3. Адрес доставки</h3>
-        <div class="form-row">
-          <label class="field">Страна
-            <input name="country" autocomplete="country-name" value="Россия" required>
-          </label>
-          <label class="field">Город
-            <input name="city" autocomplete="address-level2" required>
-          </label>
-        </div>
-        <label class="field">Улица и дом
-          <input name="street" autocomplete="street-address" required>
-        </label>
-        <label class="field">Почтовый индекс
-          <input name="postal_code" autocomplete="postal-code" required>
-        </label>
-      </div>
-      {% endif %}
-      
-      <div class="checkout-footer">
-        <button class="button primary large">Оформить заказ на {{ totals.total|currency }}</button>
-        <p class="terms">Нажимая кнопку, вы соглашаетесь с условиями обслуживания.</p>
-      </div>
-    </form>
-    <aside class="summary-card">
-      <h2>Состав заказа</h2>
-      {% for item in items %}
-        <p><span>{{ item.product.name }} × {{ item.quantity }}</span><strong>{{ item.line_total|currency }}</strong></p>
-      {% endfor %}
-      <p><span>Товары</span><strong>{{ totals.subtotal|currency }}</strong></p>
-      <p><span>Доставка</span><strong>{{ totals.shipping|currency }}</strong></p>
-      {% if totals.assembly_cost > 0 %}
-        <p><span>Сборка</span><strong>{{ totals.assembly_cost|currency }}</strong></p>
-      {% endif %}
-      <p class="summary-total"><span>Итого</span><strong>{{ totals.total|currency }}</strong></p>
-    </aside>
-  </div>
+            {% if selected_delivery == delivery_methods.DELIVERY %}
+            <div class="form-section">
+                <h3>3. Адрес доставки</h3>
+                <div class="form-row">
+                    <label class="field">Страна
+                        <input name="country" autocomplete="country-name" value="Россия" required>
+                    </label>
+                    <label class="field">Город
+                        <input name="city" autocomplete="address-level2" required>
+                    </label>
+                </div>
+                <label class="field">Улица и дом
+                    <input name="street" autocomplete="street-address" required>
+                </label>
+                <label class="field">Почтовый индекс
+                    <input name="postal_code" autocomplete="postal-code" required>
+                </label>
+            </div>
+            {% endif %}
+
+            <div class="checkout-footer">
+                <button class="button primary large" name="intent" value="place_order">Оформить заказ на {{ totals.total|currency }}</button>
+                <p class="terms">Нажимая кнопку, вы соглашаетесь с условиями обслуживания.</p>
+            </div>
+        </form>
+        <aside class="summary-card">
+            <h2>Состав заказа</h2>
+            {% for item in items %}
+            <p><span>{{ item.product.name }} × {{ item.quantity }}</span><strong>{{ item.line_total|currency }}</strong>
+            </p>
+            {% endfor %}
+            <p><span>Товары</span><strong>{{ totals.subtotal|currency }}</strong></p>
+            <p><span>Доставка</span><strong>{{ totals.shipping|currency }}</strong></p>
+            {% if totals.assembly_cost > 0 %}
+            <p><span>Сборка</span><strong>{{ totals.assembly_cost|currency }}</strong></p>
+            {% endif %}
+            <p class="summary-total"><span>Итого</span><strong>{{ totals.total|currency }}</strong></p>
+        </aside>
+    </div>
 </section>
 {% endblock %}
