@@ -1,0 +1,42 @@
+<aside class="admin-rail" aria-label="Разделы управления">
+    <p class="admin-rail-title">Управление</p>
+    <nav class="admin-section-nav">
+        <a class="admin-section-link {% if active_section == 'products' %}active{% endif %}"
+           href="{{ url_for('admin.dashboard.index', section='products') }}"
+           data-spa-link
+           data-section="products">
+            <span>Товары</span>
+            <strong>{{ products|length }}</strong>
+        </a>
+        <a class="admin-section-link {% if active_section == 'categories' %}active{% endif %}"
+           href="{{ url_for('admin.dashboard.index', section='categories') }}"
+           data-spa-link
+           data-section="categories">
+            <span>Категории</span>
+            <strong>{{ categories|length }}</strong>
+        </a>
+        {% if current_user.role == 'admin' %}
+        <a class="admin-section-link {% if active_section == 'users' %}active{% endif %}"
+           href="{{ url_for('admin.dashboard.index', section='users') }}"
+           data-spa-link
+           data-section="users">
+            <span>Пользователи</span>
+            <strong>{{ users|length }}</strong>
+        </a>
+        {% endif %}
+        <a class="admin-section-link {% if active_section == 'orders' %}active{% endif %}"
+           href="{{ url_for('admin.dashboard.index', section='orders') }}"
+           data-spa-link
+           data-section="orders">
+            <span>Заказы</span>
+            <strong>{{ orders|length }}</strong>
+        </a>
+        <a class="admin-section-link {% if active_section == 'reviews' %}active{% endif %}"
+           href="{{ url_for('admin.dashboard.index', section='reviews') }}"
+           data-spa-link
+           data-section="reviews">
+            <span>Отзывы</span>
+            <strong>{{ reviews|length }}</strong>
+        </a>
+    </nav>
+</aside>

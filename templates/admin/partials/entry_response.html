@@ -1,0 +1,34 @@
+{# Возвращается при клике на строку таблицы #}
+{# Обновляет и таблицу, и форму #}
+
+<!-- Обновленная таблица -->
+<div class="panel-header">
+    <div>
+        <p class="eyebrow">
+            {% if active_section == 'products' %}Товары
+            {% elif active_section == 'categories' %}Категории
+            {% elif active_section == 'users' %}Пользователи
+            {% elif active_section == 'orders' %}Заказы
+            {% elif active_section == 'reviews' %}Отзывы
+            {% endif %}
+        </p>
+        <h2>
+            {% if active_section == 'products' %}Товары
+            {% elif active_section == 'categories' %}Категории
+            {% elif active_section == 'users' %}Пользователи
+            {% elif active_section == 'orders' %}Заказы
+            {% elif active_section == 'reviews' %}Отзывы
+            {% endif %}
+        </h2>
+    </div>
+    {% if active_section != 'orders' %}
+    <a class="button primary" href="{{ url_for('admin.dashboard.index', section=active_section, action='new') }}" data-spa-link>
+        Добавить
+    </a>
+    {% endif %}
+</div>
+
+{% include 'admin/includes/admin_tables.html' %}
+
+<!-- Обновленная форма -->
+{% include 'admin/includes/admin_forms.html' %}

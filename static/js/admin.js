@@ -5,47 +5,79 @@ document.addEventListener('DOMContentLoaded', () => {
 function initSPA() {
     // Handle navigation links
     document.querySelectorAll('.admin-section-link, [data-spa-link]').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const url = link.getAttribute('href');
-            loadSection(url);
-        });
+        link.removeEventListener('click', handleSectionClick);
+        link.addEventListener('click', handleSectionClick);
     });
 
     // Handle table row clicks
     document.querySelectorAll('[data-spa-row]').forEach(row => {
-        row.addEventListener('click', (e) => {
-            e.preventDefault();
-            const url = row.getAttribute('data-href');
-            loadEntry(url);
-        });
+        row.removeEventListener('click', handleRowClick);
+        row.addEventListener('click', handleRowClick);
     });
 
     // Handle forms
     document.querySelectorAll('.embedded-admin-form').forEach(form => {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            submitForm(form);
-        });
+        form.removeEventListener('submit', handleFormSubmit);
+        form.addEventListener('submit', handleFormSubmit);
     });
+}
+
+function handleSectionClick(e) {
+    e.preventDefault();
+    const url = this.getAttribute('href');
+    loadSection(url);
+}
+
+function handleRowClick(e) {
+    // Don't trigger if clicking on a button or link inside the row
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' ||
+        e.target.closest('button') || e.target.closest('a')) {
+        return;
+    }
+    e.preventDefault();
+    const url = this.getAttribute('data-href');
+    if (url) {
+        loadEntry(url);
+    }
+}
+
+async function handleFormSubmit(e) {
+    e.preventDefault();
+    await submitForm(this);
 }
 
 async function loadSection(url) {
     try {
+        showLoading();
+
         const response = await fetch(url, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-SPA-Request': 'section'
+            }
         });
+
         if (!response.ok) throw new Error('Network response was not ok');
-        
+
         const html = await response.text();
-        document.querySelector('.admin-list-panel').innerHTML = html;
-        
-        // Update URL in browser
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Update list panel
+        const newContent = doc.querySelector('#admin-list-panel');
+        if (newContent) {
+            document.querySelector('#admin-list-panel').innerHTML = newContent.innerHTML;
+        }
+
+        // Clear form panel
+        const emptyForm = doc.querySelector('#admin-form-panel');
+        if (emptyForm) {
+            document.querySelector('#admin-form-panel').innerHTML = emptyForm.innerHTML;
+        }
+
+        // Update URL
         window.history.pushState({}, '', url);
-        
-        // Re-initialize listeners for the new content
-        initSPA();
-        
+
         // Update active state in sidebar
         const urlParams = new URLSearchParams(url.split('?')[1]);
         const section = urlParams.get('section') || 'products';
@@ -54,29 +86,51 @@ async function loadSection(url) {
             const linkSection = linkUrl.searchParams.get('section') || 'products';
             link.classList.toggle('active', linkSection === section);
         });
+
+        initSPA();
+        hideLoading();
     } catch (error) {
         console.error('Error loading section:', error);
-        window.location.href = url; // Fallback to full reload
+        hideLoading();
+        window.location.href = url;
     }
 }
 
 async function loadEntry(url) {
     try {
-        const response = await fetch(url);
+        showLoading();
+
+        const response = await fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-SPA-Request': 'entry'
+            }
+        });
+
         if (!response.ok) throw new Error('Network response was not ok');
-        
+
         const html = await response.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
-        
-        // Update both list and form panels
-        document.querySelector('.admin-list-panel').innerHTML = doc.querySelector('.admin-list-panel').innerHTML;
-        document.querySelector('.admin-form-panel').innerHTML = doc.querySelector('.admin-form-panel').innerHTML;
-        
+
+        // Update list panel
+        const newListPanel = doc.querySelector('#admin-list-panel');
+        if (newListPanel) {
+            document.querySelector('#admin-list-panel').innerHTML = newListPanel.innerHTML;
+        }
+
+        // Update form panel
+        const newFormPanel = doc.querySelector('#admin-form-panel');
+        if (newFormPanel) {
+            document.querySelector('#admin-form-panel').innerHTML = newFormPanel.innerHTML;
+        }
+
         window.history.pushState({}, '', url);
         initSPA();
+        hideLoading();
     } catch (error) {
         console.error('Error loading entry:', error);
+        hideLoading();
         window.location.href = url;
     }
 }
@@ -84,37 +138,122 @@ async function loadEntry(url) {
 async function submitForm(form) {
     const formData = new FormData(form);
     const url = form.getAttribute('action');
-    
+
+    showLoading();
+
     try {
         const response = await fetch(url, {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         });
-        
-        if (response.redirected) {
-            loadSection(response.url);
+
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+
+            // Update panels with returned HTML
+            if (data.listPanel) {
+                document.querySelector('#admin-list-panel').innerHTML = data.listPanel;
+            }
+            if (data.formPanel) {
+                document.querySelector('#admin-form-panel').innerHTML = data.formPanel;
+            }
+
+            // Show flash message
+            if (data.message) {
+                showFlashMessage(data.message, data.success ? 'success' : 'error');
+            }
+
+            initSPA();
+        } else if (response.redirected) {
+            await loadSection(response.url);
         } else {
             const html = await response.text();
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-            document.querySelector('.admin-form-panel').innerHTML = doc.querySelector('.admin-form-panel').innerHTML;
+
+            // Update form panel
+            const newFormPanel = doc.querySelector('#admin-form-panel');
+            if (newFormPanel) {
+                document.querySelector('#admin-form-panel').innerHTML = newFormPanel.innerHTML;
+            }
+
+            // Update list panel if it came in response
+            const newListPanel = doc.querySelector('#admin-list-panel');
+            if (newListPanel) {
+                document.querySelector('#admin-list-panel').innerHTML = newListPanel.innerHTML;
+            }
+
             initSPA();
         }
+
+        hideLoading();
     } catch (error) {
         console.error('Error submitting form:', error);
-        form.submit(); // Fallback
+        hideLoading();
+        form.submit();
     }
 }
 
-function filterTable(tableClass, query) {
-    const rows = document.querySelectorAll(`.${tableClass} tbody tr`);
+function showFlashMessage(message, type) {
+    // Create flash message element
+    const flashDiv = document.createElement('div');
+    flashDiv.className = `flash-message ${type}`;
+    flashDiv.innerHTML = `
+        <span>${message}</span>
+        <button class="flash-close">&times;</button>
+    `;
+
+    // Add to page
+    const container = document.querySelector('.admin-page');
+    if (container) {
+        container.insertBefore(flashDiv, container.firstChild);
+
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            flashDiv.remove();
+        }, 3000);
+
+        // Close button
+        flashDiv.querySelector('.flash-close').addEventListener('click', () => {
+            flashDiv.remove();
+        });
+    }
+}
+
+function showLoading() {
+    const panels = document.querySelectorAll('.admin-list-panel, .admin-form-panel');
+    panels.forEach(panel => {
+        panel.style.opacity = '0.5';
+        panel.style.pointerEvents = 'none';
+    });
+}
+
+function hideLoading() {
+    const panels = document.querySelectorAll('.admin-list-panel, .admin-form-panel');
+    panels.forEach(panel => {
+        panel.style.opacity = '';
+        panel.style.pointerEvents = '';
+    });
+}
+
+window.filterTable = function(tableClass, query) {
+    const table = document.querySelector(`.${tableClass}`);
+    if (!table) return;
+
+    const rows = table.querySelectorAll('tbody tr');
     const q = query.toLowerCase();
+
     rows.forEach(row => {
         const text = row.textContent.toLowerCase();
         row.style.display = text.includes(q) ? '' : 'none';
     });
-}
+};
 
-// Global filter function for the search input
-window.filterTable = filterTable;
-
+window.addEventListener('popstate', () => {
+    loadSection(window.location.href);
+});

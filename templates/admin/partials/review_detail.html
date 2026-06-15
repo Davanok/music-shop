@@ -1,0 +1,32 @@
+<div class="panel-header">
+    <h2>Модерация отзыва</h2>
+</div>
+<div class="form-card embedded-admin-form">
+    <div class="review-details">
+        <p class="field-label">Товар</p>
+        <p>{{ selected_review.product.name }}</p>
+
+        <p class="field-label">Автор</p>
+        <p>{{ selected_review.user.name }} ({{ selected_review.user.email }})</p>
+
+        <p class="field-label">Рейтинг</p>
+        <div class="stars">
+            {% for i in range(5) %}
+                {% if i < selected_review.rating %}★{% else %}☆{% endif %}
+            {% endfor %}
+        </div>
+
+        <p class="field-label">Комментарий</p>
+        <p class="review-comment-text">{{ selected_review.comment }}</p>
+
+        <p class="field-label">Дата</p>
+        <p>{{ selected_review.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+    </div>
+
+    <div class="delete-form-row">
+        <form method="post" action="{{ url_for('admin.dashboard.delete_review', review_id=selected_review.id) }}"
+              onsubmit="return confirm('Удалить этот отзыв?')">
+            <button class="danger">Удалить отзыв</button>
+        </form>
+    </div>
+</div>
