@@ -314,8 +314,8 @@
             <div class="panel-header">
                 <h2>{{ 'Новая категория' if is_adding else 'Редактировать категорию' }}</h2>
             </div>
-            <form class="form-card embedded-admin-form" method="post"
-                  action="{{ url_for('admin.categories.update', category_id=selected_category.id) if selected_category else url_for('admin.categories.add') }}">
+            <form class="form-card embedded-admin-form" method="post" enctype="multipart/form-data"
+                  action="{{ url_for('admin.categories.edit', category_id=selected_category.id) if selected_category and not is_adding else url_for('admin.categories.add_or_edit') }}">
                 <label class="field">Название<input name="name"
                                                     value="{{ selected_category.name if selected_category else '' }}"
                                                     required></label>
@@ -323,11 +323,16 @@
                                                            value="{{ selected_category.slug if selected_category else '' }}"
                                                            placeholder="Если пусто, создается из названия"></label>
                 <label class="field">Описание<textarea name="description" rows="4">{{ selected_category.description if selected_category else '' }}</textarea></label>
-                <label class="field">Изображение<input name="image_url"
+                <label class="field">Ссылка на изображение<input name="image_url"
                                                        value="{{ selected_category.image_url if selected_category else '' }}"></label>
-                {% if selected_category %}<img class="upload-preview" src="{{ selected_category.image_url }}"
+                <label class="field upload-field">Загрузить изображение категории<input name="image_file" type="file"
+                                                                              accept="image/*"></label>
+                {% if selected_category and selected_category.image_url %}<img class="upload-preview" src="{{ selected_category.image_url }}"
                                                alt="{{ selected_category.name }}">{% endif %}
-                <button class="button primary">Сохранить категорию</button>
+                <div class="hero-actions">
+                    <button class="button primary">Сохранить категорию</button>
+                    <a class="button ghost" href="{{ url_for('admin.dashboard.index', section='categories') }}">Отмена</a>
+                </div>
             </form>
             {% if selected_category %}
             <div class="delete-form-row">
