@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, request, url_for
+from flask import Blueprint, flash, redirect, request, url_for, render_template
 from sqlalchemy.exc import IntegrityError
 
 from music_shop.data import repositories as repo
@@ -7,46 +7,56 @@ from music_shop.data.services import (
     DEFAULT_IMAGE,
     manager_required,
     slugify,
+    save_uploaded_image,
 )
 
 bp = Blueprint("categories", __name__, url_prefix="/categories")
 
-@bp.post("")
-@manager_required
-def add():
-    try:
-        name = request.form["name"].strip()
-        category = repo.create_category(
-            slug=slugify(request.form.get("slug") or name),
-            name=name,
-            description=request.form.get("description") or "Пользовательская категория.",
-            image_url=request.form.get("image_url") or DEFAULT_IMAGE,
-        )
-        flash("Категория добавлена.", "success")
-        return redirect(url_for("admin.dashboard.index", section="categories", entry_id=category.id))
-    except IntegrityError:
-        db.session.rollback()
-        flash("Адрес категории должен быть уникальным.", "error")
-    return redirect(url_for("admin.dashboard.index", section="categories", action="new"))
 
-
-@bp.post("/<int:category_id>/edit")
+@bp.route("/add", methods=["GET", "POST"])
+@bp.route("/<int:category_id>/edit", methods=["GET", "POST"])
 @manager_required
-def update(category_id):
-    try:
-        name = request.form["name"].strip()
-        repo.update_category(
-            category_id,
-            slug=slugify(request.form.get("slug") or name),
-            name=name,
-            description=request.form.get("description") or "Пользовательская категория.",
-            image_url=request.form.get("image_url") or DEFAULT_IMAGE,
-        )
-        flash("Категория обновлена.", "success")
-    except IntegrityError:
-        db.session.rollback()
-        flash("Адрес категории должен быть уникальным.", "error")
-    return redirect(url_for("admin.dashboard.index", section="categories", entry_id=category_id))
+def add_or_edit(category_id=None):
+    selected_category = repo.get_category(category_id) if category_id else None
+
+    if request.method == "POST":
+        try:
+            # Handle image upload
+            uploaded_image = save_uploaded_image(request.files.get("image_file"))
+            image_url = uploaded_image or request.form.get("image_url") or (
+                selected_category.image_url if selected_category else None) or DEFAULT_IMAGE
+
+            name = request.form["name"].strip()
+            slug = slugify(request.form.get("slug") or name)
+            description = request.form.get("description") or "Пользовательская категория."
+
+            if selected_category:
+                repo.update_category(
+                    category_id,
+                    slug=slug,
+                    name=name,
+                    description=description,
+                    image_url=image_url,
+                )
+                flash("Категория обновлена.", "success")
+            else:
+                repo.create_category(
+                    slug=slug,
+                    name=name,
+                    description=description,
+                    image_url=image_url,
+                )
+                flash("Категория создана.", "success")
+
+            return redirect(url_for("admin.dashboard.index", section="categories"))
+
+        except IntegrityError:
+            db.session.rollback()
+            flash("Адрес категории должен быть уникальным.", "error")
+
+    return render_template("admin/categories_form.html",
+                           selected_category=selected_category,
+                           is_adding=not selected_category)
 
 
 @bp.post("/<int:category_id>/delete")
