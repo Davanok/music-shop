@@ -7,11 +7,11 @@
 
 {% set active_section = active_section|default('products') %}
 {% set section_titles = {
-    'products': 'Товары',
-    'categories': 'Категории',
-    'users': 'Пользователи',
-    'orders': 'Заказы',
-    'reviews': 'Отзывы'
+'products': 'Товары',
+'categories': 'Категории',
+'users': 'Пользователи',
+'orders': 'Заказы',
+'reviews': 'Отзывы'
 } %}
 
 <section class="section page-section admin-page">
@@ -46,25 +46,30 @@
         <aside class="admin-rail" aria-label="Разделы управления">
             <p class="admin-rail-title">Управление</p>
             <nav class="admin-section-nav">
-                <a class="admin-section-link {% if active_section == 'products' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='products') }}" data-spa-link>
+                <a class="admin-section-link {% if active_section == 'products' %}active{% endif %}"
+                   href="{{ url_for('admin.dashboard.index', section='products') }}" data-spa-link>
                     <span>Товары</span>
                     <strong>{{ products|length }}</strong>
                 </a>
-                <a class="admin-section-link {% if active_section == 'categories' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='categories') }}" data-spa-link>
+                <a class="admin-section-link {% if active_section == 'categories' %}active{% endif %}"
+                   href="{{ url_for('admin.dashboard.index', section='categories') }}" data-spa-link>
                     <span>Категории</span>
                     <strong>{{ categories|length }}</strong>
                 </a>
                 {% if current_user.role == 'admin' %}
-                <a class="admin-section-link {% if active_section == 'users' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='users') }}" data-spa-link>
+                <a class="admin-section-link {% if active_section == 'users' %}active{% endif %}"
+                   href="{{ url_for('admin.dashboard.index', section='users') }}" data-spa-link>
                     <span>Пользователи</span>
                     <strong>{{ users|length }}</strong>
                 </a>
                 {% endif %}
-                <a class="admin-section-link {% if active_section == 'orders' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='orders') }}" data-spa-link>
+                <a class="admin-section-link {% if active_section == 'orders' %}active{% endif %}"
+                   href="{{ url_for('admin.dashboard.index', section='orders') }}" data-spa-link>
                     <span>Заказы</span>
                     <strong>{{ orders|length }}</strong>
                 </a>
-                <a class="admin-section-link {% if active_section == 'reviews' %}active{% endif %}" href="{{ url_for('admin.dashboard.index', section='reviews') }}" data-spa-link>
+                <a class="admin-section-link {% if active_section == 'reviews' %}active{% endif %}"
+                   href="{{ url_for('admin.dashboard.index', section='reviews') }}" data-spa-link>
                     <span>Отзывы</span>
                     <strong>{{ reviews|length }}</strong>
                 </a>
@@ -78,7 +83,8 @@
                     <h2>{{ section_titles[active_section] }}</h2>
                 </div>
                 {% if active_section != 'orders' %}
-                <a class="button primary" href="{{ url_for('admin.dashboard.index', section=active_section, action='new') }}">
+                <a class="button primary"
+                   href="{{ url_for('admin.dashboard.index', section=active_section, action='new') }}">
                     Добавить
                 </a>
                 {% endif %}
@@ -104,7 +110,8 @@
                 <tbody>
                 {% for product in products %}
                 <tr class="product-row {% if selected_product and selected_product.id == product.id %}selected{% endif %}"
-                    data-href="{{ url_for('admin.dashboard.index', section='products', entry_id=product.id) }}" data-spa-row>
+                    data-href="{{ url_for('admin.dashboard.index', section='products', entry_id=product.id) }}"
+                    data-spa-row>
                     <td>
                         <div class="entry-title-cell">
                             <img src="{{ product.image_url }}" alt="{{ product.name }}" class="table-thumb">
@@ -117,11 +124,11 @@
                     <td>{{ product.price|currency }}</td>
                     <td>
                         {% if product.stock == 0 %}
-                            <span class="stock danger">Нет</span>
+                        <span class="stock danger">Нет</span>
                         {% elif product.stock < 5 %}
-                            <span class="stock warning">{{ product.stock }}</span>
+                        <span class="stock warning">{{ product.stock }}</span>
                         {% else %}
-                            <span class="stock success">{{ product.stock }}</span>
+                        <span class="stock success">{{ product.stock }}</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -144,7 +151,8 @@
                 <tbody>
                 {% for category in categories %}
                 <tr class="{% if selected_category and selected_category.id == category.id %}selected{% endif %}"
-                    data-href="{{ url_for('admin.dashboard.index', section='categories', entry_id=category.id) }}" data-spa-row>
+                    data-href="{{ url_for('admin.dashboard.index', section='categories', entry_id=category.id) }}"
+                    data-spa-row>
                     <td>
                         <div class="entry-title-cell">
                             <img src="{{ category.image_url }}" alt="{{ category.name }}" class="table-thumb">
@@ -205,7 +213,8 @@
                 <tbody>
                 {% for review in reviews %}
                 <tr class="{% if selected_review and selected_review.id == review.id %}selected{% endif %}"
-                    data-href="{{ url_for('admin.dashboard.index', section='reviews', entry_id=review.id) }}" data-spa-row>
+                    data-href="{{ url_for('admin.dashboard.index', section='reviews', entry_id=review.id) }}"
+                    data-spa-row>
                     <td>{{ review.product.name }}</td>
                     <td>{{ review.user.name }}</td>
                     <td>
@@ -239,7 +248,8 @@
                 <tbody>
                 {% for order in orders %}
                 <tr class="{% if selected_order and selected_order.id == order.id %}selected{% endif %}"
-                    data-href="{{ url_for('admin.dashboard.index', section='orders', entry_id=order.id) }}" data-spa-row>
+                    data-href="{{ url_for('admin.dashboard.index', section='orders', entry_id=order.id) }}"
+                    data-spa-row>
                     <td>
                         <strong>{{ order.order_number }}</strong>
                         <div class="product-meta">{{ order.created_at.strftime('%d.%m.%Y') }}</div>
@@ -261,16 +271,35 @@
             <div class="panel-header">
                 <h2>{{ 'Новый товар' if is_adding else 'Редактировать товар' }}</h2>
             </div>
-            <form class="form-card embedded-admin-form" method="post" enctype="multipart/form-data" action="{{ url_for('admin.products.form', product_id=selected_product.id) if selected_product else url_for('admin.products.form') }}">
-                <label class="field">Название<input name="name" value="{{ selected_product.name if selected_product else '' }}" required></label>
-                <label class="field">Адрес товара<input name="slug" value="{{ selected_product.slug if selected_product else '' }}" placeholder="Если пусто, создается из названия"></label>
-                <label class="field">Категория<select name="category_id">{% for category in categories %}<option value="{{ category.id }}" {% if selected_product and selected_product.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></label>
-                <div class="form-row"><label class="field">Цена<input name="price" type="number" min="0" step="0.01" value="{{ selected_product.price if selected_product else '0.00' }}" required></label><label class="field">Остаток<input name="stock" type="number" min="0" value="{{ selected_product.stock if selected_product else '0' }}" required></label></div>
-                <label class="field checkbox-field"><input name="featured" type="checkbox" {% if selected_product and selected_product.featured %}checked{% endif %}> Избранный товар</label>
+            <form class="form-card embedded-admin-form" method="post" enctype="multipart/form-data"
+                  action="{{ url_for('admin.products.form', product_id=selected_product.id) if selected_product else url_for('admin.products.form') }}">
+                <label class="field">Название<input name="name"
+                                                    value="{{ selected_product.name if selected_product else '' }}"
+                                                    required></label>
+                <label class="field">Адрес товара<input name="slug"
+                                                        value="{{ selected_product.slug if selected_product else '' }}"
+                                                        placeholder="Если пусто, создается из названия"></label>
+                <label class="field">Категория<select name="category_id">{% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_product and selected_product.category_id==
+                            category.id %}selected{% endif %}>{{ category.name }}
+                    </option>
+                    {% endfor %}</select></label>
+                <div class="form-row"><label class="field">Цена<input name="price" type="number" min="0" step="0.01"
+                                                                      value="{{ selected_product.price if selected_product else '0.00' }}"
+                                                                      required></label><label
+                        class="field">Остаток<input name="stock" type="number" min="0"
+                                                    value="{{ selected_product.stock if selected_product else '0' }}"
+                                                    required></label></div>
+                <label class="field checkbox-field"><input name="featured" type="checkbox" {% if selected_product and
+                                                           selected_product.featured %}checked{% endif %}> Избранный
+                    товар</label>
                 <label class="field">Описание<textarea name="description" rows="4" required>{{ selected_product.description if selected_product else '' }}</textarea></label>
-                <label class="field">Ссылка на изображение<input name="image_url" value="{{ selected_product.image_url if selected_product else '' }}"></label>
-                <label class="field upload-field">Загрузить изображение<input name="image_file" type="file" accept="image/*"></label>
-                {% if selected_product %}<img class="upload-preview" src="{{ selected_product.image_url }}" alt="Предпросмотр {{ selected_product.name }}">{% endif %}
+                <label class="field">Ссылка на изображение<input name="image_url"
+                                                                 value="{{ selected_product.image_url if selected_product else '' }}"></label>
+                <label class="field upload-field">Загрузить изображение<input name="image_file" type="file"
+                                                                              accept="image/*"></label>
+                {% if selected_product %}<img class="upload-preview" src="{{ selected_product.image_url }}"
+                                              alt="Предпросмотр {{ selected_product.name }}">{% endif %}
                 <button class="button primary">Сохранить товар</button>
             </form>
             {% if selected_product %}
@@ -285,13 +314,25 @@
             <div class="panel-header">
                 <h2>{{ 'Новая категория' if is_adding else 'Редактировать категорию' }}</h2>
             </div>
-            <form class="form-card embedded-admin-form" method="post" action="{{ url_for('admin.categories.update', category_id=selected_category.id) if selected_category else url_for('admin.categories.add') }}">
-                <label class="field">Название<input name="name" value="{{ selected_category.name if selected_category else '' }}" required></label>
-                <label class="field">Адрес категории<input name="slug" value="{{ selected_category.slug if selected_category else '' }}" placeholder="Если пусто, создается из названия"></label>
+            <form class="form-card embedded-admin-form" method="post" enctype="multipart/form-data"
+                  action="{{ url_for('admin.categories.edit', category_id=selected_category.id) if selected_category and not is_adding else url_for('admin.categories.add_or_edit') }}">
+                <label class="field">Название<input name="name"
+                                                    value="{{ selected_category.name if selected_category else '' }}"
+                                                    required></label>
+                <label class="field">Адрес категории<input name="slug"
+                                                           value="{{ selected_category.slug if selected_category else '' }}"
+                                                           placeholder="Если пусто, создается из названия"></label>
                 <label class="field">Описание<textarea name="description" rows="4">{{ selected_category.description if selected_category else '' }}</textarea></label>
-                <label class="field">Изображение<input name="image_url" value="{{ selected_category.image_url if selected_category else '' }}"></label>
-                {% if selected_category %}<img class="upload-preview" src="{{ selected_category.image_url }}" alt="{{ selected_category.name }}">{% endif %}
-                <button class="button primary">Сохранить категорию</button>
+                <label class="field">Ссылка на изображение<input name="image_url"
+                                                       value="{{ selected_category.image_url if selected_category else '' }}"></label>
+                <label class="field upload-field">Загрузить изображение категории<input name="image_file" type="file"
+                                                                              accept="image/*"></label>
+                {% if selected_category and selected_category.image_url %}<img class="upload-preview" src="{{ selected_category.image_url }}"
+                                               alt="{{ selected_category.name }}">{% endif %}
+                <div class="hero-actions">
+                    <button class="button primary">Сохранить категорию</button>
+                    <a class="button ghost" href="{{ url_for('admin.dashboard.index', section='categories') }}">Отмена</a>
+                </div>
             </form>
             {% if selected_category %}
             <div class="delete-form-row">
@@ -305,11 +346,21 @@
             <div class="panel-header">
                 <h2>{{ 'Новый пользователь' if is_adding else 'Редактировать пользователя' }}</h2>
             </div>
-            <form class="form-card embedded-admin-form" method="post" action="{{ url_for('admin.users.update', user_id=selected_user.id) if selected_user else url_for('admin.users.create') }}">
-                <label class="field">Имя<input name="name" value="{{ selected_user.name if selected_user else '' }}" required></label>
-                <label class="field">Email<input name="email" type="email" value="{{ selected_user.email if selected_user else '' }}" required></label>
-                <label class="field">Пароль<input name="password" type="password" minlength="8" {% if not selected_user %}required{% endif %} placeholder="{{ 'Оставьте пустым, чтобы не менять' if selected_user else 'Минимум 8 символов' }}"></label>
-                <label class="field">Роль<select name="role">{% for role, label in role_labels.items() %}<option value="{{ role }}" {% if selected_user and selected_user.role == role %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+            <form class="form-card embedded-admin-form" method="post"
+                  action="{{ url_for('admin.users.update', user_id=selected_user.id) if selected_user else url_for('admin.users.create') }}">
+                <label class="field">Имя<input name="name" value="{{ selected_user.name if selected_user else '' }}"
+                                               required></label>
+                <label class="field">Email<input name="email" type="email"
+                                                 value="{{ selected_user.email if selected_user else '' }}"
+                                                 required></label>
+                <label class="field">Пароль<input name="password" type="password" minlength="8" {% if not selected_user
+                                                  %}required{% endif %}
+                                                  placeholder="{{ 'Оставьте пустым, чтобы не менять' if selected_user else 'Минимум 8 символов' }}"></label>
+                <label class="field">Роль<select name="role">{% for role, label in role_labels.items() %}
+                    <option value="{{ role }}" {% if selected_user and selected_user.role== role %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}</select></label>
                 <button class="button primary">Сохранить пользователя</button>
             </form>
 
@@ -320,15 +371,22 @@
             <div class="order-detail-card">
                 <p><strong>Клиент:</strong> {{ selected_order.user.name }}</p>
                 <p><strong>Email:</strong> {{ selected_order.user.email }}</p>
-                <p><strong>Адрес:</strong> {{ selected_order.address.country }}, {{ selected_order.address.city }}, {{ selected_order.address.street }}, {{ selected_order.address.postal_code }}</p>
+                <p><strong>Адрес:</strong> {{ selected_order.address.country }}, {{ selected_order.address.city }}, {{
+                    selected_order.address.street }}, {{ selected_order.address.postal_code }}</p>
                 <p><strong>Сумма:</strong> {{ selected_order.total|currency }}</p>
-                <form class="form-card embedded-admin-form" method="post" action="{{ url_for('admin.orders.update_status', order_id=selected_order.id) }}">
-                    <label class="field">Статус<select name="status">{% for status in order_statuses %}<option value="{{ status.value }}" {% if selected_order.status == status %}selected{% endif %}>{{ status.value }}</option>{% endfor %}</select></label>
+                <form class="form-card embedded-admin-form" method="post"
+                      action="{{ url_for('admin.orders.update_status', order_id=selected_order.id) }}">
+                    <label class="field">Статус<select name="status">{% for status in order_statuses %}
+                        <option value="{{ status.value }}" {% if selected_order.status== status %}selected{% endif %}>{{
+                            status.value }}
+                        </option>
+                        {% endfor %}</select></label>
                     <button class="button primary">Сохранить статус</button>
                 </form>
                 <h3>Состав заказа</h3>
                 {% for item in selected_order.items %}
-                <div class="order-line"><span>{{ item.product.name }} × {{ item.quantity }}</span><strong>{{ item.line_total|currency }}</strong></div>
+                <div class="order-line"><span>{{ item.product.name }} × {{ item.quantity }}</span><strong>{{
+                    item.line_total|currency }}</strong></div>
                 {% endfor %}
             </div>
 
@@ -336,31 +394,35 @@
             <div class="panel-header">
                 <h2>Модерация отзыва</h2>
             </div>
-            <div class="form-card embedded-admin-form">
+            <div class="form-card">
                 <div class="review-details">
                     <p class="field-label">Товар</p>
                     <p>{{ selected_review.product.name }}</p>
-                    
+
                     <p class="field-label">Автор</p>
                     <p>{{ selected_review.user.name }} ({{ selected_review.user.email }})</p>
-                    
+
                     <p class="field-label">Рейтинг</p>
                     <div class="stars">
                         {% for i in range(5) %}
-                            {% if i < selected_review.rating %}★{% else %}☆{% endif %}
+                        {% if i < selected_review.rating %}★{% else %}☆{% endif %}
                         {% endfor %}
                     </div>
-                    
+
                     <p class="field-label">Комментарий</p>
                     <p class="review-comment-text">{{ selected_review.comment }}</p>
-                    
+
                     <p class="field-label">Дата</p>
                     <p>{{ selected_review.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
                 </div>
-                
+
                 <div class="delete-form-row">
-                    <form method="post" action="{{ url_for('admin.dashboard.delete_review', review_id=selected_review.id) }}" onsubmit="return confirm('Удалить этот отзыв?')">
-                        <button class="danger">Удалить отзыв</button>
+                    <form class="embedded-admin-form" method="post"
+                          action="{{ url_for('admin.dashboard.delete_review', review_id=selected_review.id) }}"
+                          data-delete-form>
+                        <button type="submit" class="danger" onclick="return confirm('Удалить этот отзыв?')">Удалить
+                            отзыв
+                        </button>
                     </form>
                 </div>
             </div>
@@ -379,24 +441,24 @@
 </section>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    // Clickable rows via data-href — covers products, categories, users, orders, reviews
-    document.querySelectorAll("tr[data-href]").forEach(row => {
-        row.style.cursor = "pointer";
-        row.addEventListener("click", () => {
-            window.location.href = row.dataset.href;
-        });
-    });
-
-    // Product search filter
-    document.getElementById("product-search")
-        ?.addEventListener("input", function () {
-            const query = this.value.toLowerCase();
-            document.querySelectorAll(".product-row").forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(query) ? "" : "none";
+    document.addEventListener("DOMContentLoaded", function () {
+        // Clickable rows via data-href — covers products, categories, users, orders, reviews
+        document.querySelectorAll("tr[data-href]").forEach(row => {
+            row.style.cursor = "pointer";
+            row.addEventListener("click", () => {
+                window.location.href = row.dataset.href;
             });
         });
-});
+
+        // Product search filter
+        document.getElementById("product-search")
+            ?.addEventListener("input", function () {
+                const query = this.value.toLowerCase();
+                document.querySelectorAll(".product-row").forEach(row => {
+                    row.style.display = row.textContent.toLowerCase().includes(query) ? "" : "none";
+                });
+            });
+    });
 </script>
 
 {% endblock %}
