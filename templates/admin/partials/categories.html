@@ -1,0 +1,39 @@
+<div class="panel-header">
+    <div>
+        <p class="eyebrow">Категории</p>
+        <h2>Категории</h2>
+    </div>
+    <a class="button primary" href="{{ url_for('admin.dashboard.index', section='categories', action='new') }}" data-spa-link>
+        Добавить
+    </a>
+</div>
+
+<table class="admin-table compact-admin-table categories-table">
+    <colgroup>
+        <col style="width:75%">
+        <col style="width:25%">
+    </colgroup>
+    <thead>
+    <tr>
+        <th>Категория</th>
+        <th>Товары</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for category in categories %}
+    <tr class="{% if selected_category and selected_category.id == category.id %}selected{% endif %}"
+        data-href="{{ url_for('admin.dashboard.index', section='categories', entry_id=category.id) }}" data-spa-row>
+        <td>
+            <div class="entry-title-cell">
+                <img src="{{ category.image_url }}" alt="{{ category.name }}" class="table-thumb">
+                <div>
+                    <strong>{{ category.name }}</strong>
+                    <div class="product-meta">{{ category.description }}</div>
+                </div>
+            </div>
+        </td>
+        <td>{{ category.products|length }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
