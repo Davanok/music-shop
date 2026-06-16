@@ -17,3 +17,7 @@ class DeliveryMethod(enum.StrEnum):
 class AssemblyOption(enum.StrEnum):
     REQUIRED = "REQUIRED"
     NOT_REQUIRED = "NOT_REQUIRED"
+
+class PaymentMethod(enum.StrEnum):
+    CASHLESS = "CASHLESS"
+    CASH = "CASH"
