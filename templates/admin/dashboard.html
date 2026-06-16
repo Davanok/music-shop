@@ -315,7 +315,7 @@
                 <h2>{{ 'Новая категория' if is_adding else 'Редактировать категорию' }}</h2>
             </div>
             <form class="form-card embedded-admin-form" method="post" enctype="multipart/form-data"
-                  action="{{ url_for('admin.categories.edit', category_id=selected_category.id) if selected_category and not is_adding else url_for('admin.categories.add_or_edit') }}">
+                  action="{{ url_for('admin.categories.edit', category_id=selected_category.id) if selected_category and not is_adding else url_for('admin.categories.new') }}">
                 <label class="field">Название<input name="name"
                                                     value="{{ selected_category.name if selected_category else '' }}"
                                                     required></label>
