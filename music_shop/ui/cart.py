@@ -9,7 +9,7 @@ from music_shop.data.services import (
     place_order,
     update_cart, delivery_price, assembly_price,
 )
-from music_shop.data.enums import DeliveryMethod, AssemblyOption
+from music_shop.data.enums import DeliveryMethod, AssemblyOption, PaymentMethod
 
 bp = Blueprint("cart", __name__)
 
@@ -52,6 +52,7 @@ def checkout():
 
     delivery_method = request.form.get("delivery_method", DeliveryMethod.DELIVERY)
     assembly_option = request.form.get("assembly_option", AssemblyOption.NOT_REQUIRED)
+    payment_method = request.form.get("payment_method", PaymentMethod.CASH)
     totals = cart_totals(items, delivery_method, assembly_option)
 
     if request.method == "POST" and request.form.get("intent") == "place_order":
@@ -83,8 +84,10 @@ def checkout():
         user=user,
         delivery_methods=DeliveryMethod,
         assembly_options=AssemblyOption,
+        payment_methods=PaymentMethod,
         selected_delivery=delivery_method,
         selected_assembly=assembly_option,
+        selected_payment=payment_method,
         shipping_cost=delivery_price(),
         assembly_cost=assembly_price()
     )

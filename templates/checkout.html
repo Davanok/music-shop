@@ -73,6 +73,24 @@
             </div>
             {% endif %}
 
+            <div class="form-section">
+                <h3>4. Способ оплаты</h3>
+                <div class="radio-group">
+                    <label class="radio-option {{ 'active' if selected_payment == payment_methods.CASH }}">
+                        <input type="radio" name="payment_method" value="{{ payment_methods.CASH.name }}" {{
+                        'checked' if selected_payment == payment_methods.CASH }} onchange="this.form.submit()">
+                        <div class="radio-content"><strong>Наличными</strong></div>
+                    </label>
+                    <label class="radio-option {{ 'active' if selected_payment == payment_methods.CASHLESS }}">
+                        <input type="radio" name="payment_method" value="{{ payment_methods.CASHLESS.name }}" {{
+                        'checked' if selected_payment == payment_methods.CASHLESS }} onchange="this.form.submit()">
+                        <div class="radio-content">
+                            <strong>Картой</strong>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             <div class="checkout-footer">
                 <button class="button primary large" name="intent" value="place_order">Оформить заказ на {{ totals.total|currency }}</button>
                 <p class="terms">Нажимая кнопку, вы соглашаетесь с условиями обслуживания.</p>
